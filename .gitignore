@@ -10,6 +10,9 @@
 *.userosscache
 *.sln.docstates
 
+# Platform IO files that should not be added
+.pio
+
 # Dont want this file in source control as it will contain the device id, key and wifi credentials
 iot_configs.h
 
