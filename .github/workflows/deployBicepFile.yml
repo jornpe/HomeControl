@@ -1,0 +1,31 @@
+name: Azure infrastructure deployment
+on: 
+  workflow_dispatch:
+  push:
+    paths: 
+      - 'infrastructure/**'
+      - '.github/workflows/deployBicepFile.yml'
+
+env:
+  MAIN_BICEP: infrastructure/main.bicep
+
+jobs:
+  Deploy-infrastructure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout self
+        uses: actions/checkout@v3
+          
+      - name: Azure login
+        uses: Azure/login@v1.4.5
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: deploy
+        uses: azure/arm-deploy@v1
+        with:
+          scope: subscription
+          region: norwayeast 
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
+          template: ${{ env.MAIN_BICEP }}
+          failOnStdErr: true
