@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "webapp", "src\webapp\webapp.csproj", "{B24EB064-F7D8-4322-9AFA-55D6EC3D7870}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "webapp", "src\webapp\webapp.csproj", "{B24EB064-F7D8-4322-9AFA-55D6EC3D7870}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "webappApi", "src\webappApi\webappApi.csproj", "{AE25E4F4-1D07-475F-B27E-DE2D2BAF3F29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "webappApi", "src\webappApi\webappApi.csproj", "{AE25E4F4-1D07-475F-B27E-DE2D2BAF3F29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "src\Common\Common.csproj", "{BC5A05B9-7587-4100-8B93-8F48457C7C84}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "src\Common\Common.csproj", "{BC5A05B9-7587-4100-8B93-8F48457C7C84}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
