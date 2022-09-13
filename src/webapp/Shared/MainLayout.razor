@@ -9,19 +9,18 @@
     <div class="main">
         <div class="top-row px-4">
             <AuthorizeView>
-               <Authorized>
-                    Hello, @context.User.Identity.Name!
+                <Authorized>
+                    Hi there, @context.User.Identity.Name!
                     <a href="/.auth/logout?post_logout_redirect_uri=/">Log out</a>
                 </Authorized>
                 <NotAuthorized>
-                    <a href="/login">Log in</a>
+                    <a href="/.auth/login/aad">Log in</a>
                 </NotAuthorized>
             </AuthorizeView>
         </div>
-    </div>
 
-    <div class="content px-4">
-        @Body
+        <div class="content px-4">
+            @Body
+        </div>
     </div>
-
 </div>
