@@ -2,7 +2,7 @@ targetScope = 'subscription'
 
 param repositoryUrl string = 'https://github.com/jornpe/HomeProject'
 param application string = 'HomeProject'
-param location string = 'norwayeast'
+param location string = 'westeurope'
 param rgName string = 'rg-${application}-${location}-001'
 
 @description('Date and time in this format: ')

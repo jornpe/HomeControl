@@ -9,6 +9,7 @@ param location string
 var websiteName = 'HomeWebsite'
 
 var appInsightName = 'appi-${application}'
+var functionAppName = 'fnapp-${application}'
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: appInsightName
@@ -20,13 +21,23 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   tags: tags
 }
 
+module functionApp 'Modules/Function.bicep' = {
+  name: functionAppName
+  params: {
+    applicationInsightsName: appInsights.name
+    appName: application
+    location: location
+    tags: tags
+  }
+}
+
 module website 'Modules/StaticWebApp.bicep' = {
   name: 'webSite'
   params: {
     tags: tags
     websiteName: websiteName
     repositoryUrl: repositoryUrl
-    location: 'westeurope'
+    location: location
     appInsightInstrumantionKey: appInsights.properties.InstrumentationKey
   }
 }

@@ -2,8 +2,7 @@ param repositoryUrl string
 param websiteName string
 param tags object
 param appInsightInstrumantionKey string
-@allowed(['westeurope']) // nowayeast is not available as region for static web app
-param location string 
+param location string
 param branch string = 'main'
 param provider string = 'GitHub'
 
