@@ -7,7 +7,7 @@ Please feel free to comment, add PR's and fork are try it on your own. I will tr
 
 ## Motivations
 
-My motivation for creating this project is 2 part, first I want to learn how to build the infrastructure in azure in a best practice and secure way. Second, I really like working with IOT devices, and I need to be able to open my garage from inside my car 😂
+My motivation for creating this project is 2 part, first I want to learn how to build the infrastructure in azure in a best practice and secure way. Second, I really like working with IOT devices, and I need to be able to open my garage from inside my car 😀
 
 ## Architecture overview
 
