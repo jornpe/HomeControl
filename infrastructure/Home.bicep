@@ -24,7 +24,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 module functionApp 'Modules/Function.bicep' = {
   name: functionAppName
   params: {
-    applicationInsightsName: appInsights.name
+    appInsightInstrumantionKey: appInsights.properties.InstrumentationKey
     appName: application
     location: location
     tags: tags
@@ -38,6 +38,7 @@ module website 'Modules/StaticWebApp.bicep' = {
     websiteName: websiteName
     repositoryUrl: repositoryUrl
     location: location
+    functionAppEndpoint: functionApp.outputs.functionEndpoint
     appInsightInstrumantionKey: appInsights.properties.InstrumentationKey
   }
 }

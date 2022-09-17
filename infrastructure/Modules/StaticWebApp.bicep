@@ -3,6 +3,7 @@ param websiteName string
 param tags object
 param appInsightInstrumantionKey string
 param location string
+param functionAppEndpoint string
 param branch string = 'main'
 param provider string = 'GitHub'
 
@@ -28,5 +29,6 @@ resource symbolicname 'Microsoft.Web/staticSites/config@2022-03-01' = {
   parent: website
   properties: {
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightInstrumantionKey
+    API_ENDPOINT: functionAppEndpoint
   }
 }

@@ -5,7 +5,7 @@ param appName string
 param location string
 
 @description('Name for Application Insights resource')
-param applicationInsightsName string
+param appInsightInstrumantionKey string
 
 @description('Tags to tagg resources with')
 param tags object
@@ -15,10 +15,6 @@ var hostingPlanName = appName
 var storageAccountType = 'Standard_LRS'
 var storageAccountName = '${uniqueString(resourceGroup().id)}azfunctions'
 var functionWorkerRuntime = 'dotnet'
-
-resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
-  name: applicationInsightsName
-}
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: storageAccountName
@@ -74,7 +70,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: appInsights.properties.InstrumentationKey
+          value: appInsightInstrumantionKey
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
@@ -83,7 +79,6 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
       ]
       ftpsState: 'FtpsOnly'
       minTlsVersion: '1.2'
-      linuxFxVersion: 'DOTNET|6.0'
     }
     httpsOnly: true
   }
