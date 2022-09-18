@@ -41,6 +41,9 @@ module iotHub 'Modules/IotHub.bicep' = {
     location: location
     tags: tags
   }
+  dependsOn:[
+    appConfig
+  ]
 }
 
 module functionApp 'Modules/Function.bicep' = {
@@ -74,6 +77,10 @@ module iotHubRoleAssignment 'RoleAssignments/iotHubRoleAssignments.bicep' = {
     iotHubName: iotHubName
     principalId: functionApp.outputs.procipleId
   }
+  dependsOn: [
+    iotHub
+    functionApp
+  ]
 }
 
 module appConfigRoleAssignment 'RoleAssignments/appConfigRoleAssignment.bicep' = {
@@ -82,4 +89,8 @@ module appConfigRoleAssignment 'RoleAssignments/appConfigRoleAssignment.bicep' =
     appConfigStoreName: appConfigName
     principalId: functionApp.outputs.procipleId
   }
+  dependsOn: [
+    appConfig
+    functionApp
+  ]
 }

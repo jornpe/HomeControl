@@ -57,7 +57,7 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
   tags: tags
 }
 
-resource functionSlotConfig 'Microsoft.Web/sites/config@2022-03-01' = {
+resource functionConfig 'Microsoft.Web/sites/config@2022-03-01' = {
   name: 'appsettings'
   kind: 'string'
   parent: functionApp
