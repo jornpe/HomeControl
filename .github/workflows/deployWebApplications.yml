@@ -22,7 +22,7 @@ jobs:
       - name: 'List content of runner folder'
         shell: bash
         run: |
-          ls
+          ls -r
 
       - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
         uses: actions/setup-dotnet@v1
@@ -33,7 +33,12 @@ jobs:
         shell: bash
         run: |
           dotnet restore
-          dotnet build
+          dotnet build --configuration Release
+      
+      - name: 'List content of runner folder'
+        shell: bash
+        run: |
+          ls -r
           
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
@@ -41,8 +46,7 @@ jobs:
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/bin/Release/net6.0'
-          
-          
+    
       - name: Build and deploy web app
         uses: Azure/static-web-apps-deploy@v1
         with:
