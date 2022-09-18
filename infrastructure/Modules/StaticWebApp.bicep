@@ -1,12 +1,19 @@
+@description('URL to the github repository where the project source is located')
 param repositoryUrl string
+@description('Name fo the website resource to create')
 param websiteName string
-param tags object
+@description('Instrumentation key for the ap insigts resource to send app logs to')
 param appInsightInstrumantionKey string
-param location string
+@description('Endpoint to the functions API')
 param functionAppEndpoint string
-param branch string = 'main'
-param provider string = 'GitHub'
+@description('Location to use for the resources')
+param location string
+@description('Tags to tag the resources with')
+param tags object
 
+var branch = 'main'
+var provider = 'GitHub'
+var tier = 'Free'
 
 resource website 'Microsoft.Web/staticSites@2022-03-01' = {
   name: websiteName
@@ -18,12 +25,12 @@ resource website 'Microsoft.Web/staticSites@2022-03-01' = {
     branch: branch
   }
   sku: {
-    name: 'Free'
-    tier: 'Free'
+    name: tier
+    tier: tier
   }
 }
 
-resource symbolicname 'Microsoft.Web/staticSites/config@2022-03-01' = {
+resource siteConfig 'Microsoft.Web/staticSites/config@2022-03-01' = {
   name: 'appsettings'
   kind: 'string'
   parent: website

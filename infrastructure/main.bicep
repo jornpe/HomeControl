@@ -1,8 +1,11 @@
 targetScope = 'subscription'
-
+@description('URL to the github repository where all the source code is located')
 param repositoryUrl string = 'https://github.com/jornpe/HomeProject'
+@description('Name of the project, used in most resource names')
 param application string = 'HomeProject'
+@description('Location to use for the resources') // Default westeurope as static websites are not supported in norwayeast as of 18-09-22
 param location string = 'westeurope'
+@description('Name of the resource group to deploy all resources to')
 param rgName string = 'rg-${application}-${location}-001'
 
 @description('Date and time in this format: ')

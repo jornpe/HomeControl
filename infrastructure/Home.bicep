@@ -6,10 +6,13 @@ param tags object
 @description('Location to use for the resources')
 param location string
 
-var websiteName = 'HomeWebsite'
-
 var appInsightName = 'appi-${application}'
+var websiteName = 'site-${application}'
+var appServicePlanName = 'plan-${application}'
 var functionAppName = 'fnapp-${application}'
+var iotHubName = 'iot-${application}'
+var appConfigName = 'appc-${application}'
+var storageAccountName = '${toLower(application)}${uniqueString(resourceGroup().id)}'
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: appInsightName
@@ -21,11 +24,33 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   tags: tags
 }
 
+module appConfig 'Modules/appConfig.bicep' = {
+  name: 'AppConfigStore'
+  params: {
+    configStoreName: appConfigName
+    location: location
+    tags: tags
+  }
+}
+
+module iotHub 'Modules/IotHub.bicep' = {
+  name: 'IotHub'
+  params: {
+    configStoreName: appConfigName
+    iotHubName: iotHubName
+    location: location
+    tags: tags
+  }
+}
+
 module functionApp 'Modules/Function.bicep' = {
   name: functionAppName
   params: {
     appInsightInstrumantionKey: appInsights.properties.InstrumentationKey
-    appName: application
+    functionAppName: functionAppName
+    hostingPlanName: appServicePlanName
+    storageAccountName: storageAccountName
+    appConfigStoreEndpoint: appConfig.outputs.appConfigEndpoint
     location: location
     tags: tags
   }
@@ -35,13 +60,26 @@ module website 'Modules/StaticWebApp.bicep' = {
   name: 'webSite'
   params: {
     tags: tags
-    websiteName: websiteName
     repositoryUrl: repositoryUrl
     location: location
-    functionAppEndpoint: functionApp.outputs.functionEndpoint
+    functionAppEndpoint: functionApp.outputs.endpoint
     appInsightInstrumantionKey: appInsights.properties.InstrumentationKey
+    websiteName: websiteName
   }
 }
 
+module iotHubRoleAssignment 'RoleAssignments/iotHubRoleAssignments.bicep' = {
+  name: 'IotHubRoleAssignment'
+  params: {
+    iotHubName: iotHubName
+    principalId: functionApp.outputs.procipleId
+  }
+}
 
-
+module appConfigRoleAssignment 'RoleAssignments/appConfigRoleAssignment.bicep' = {
+  name: 'AppConfigRoleAssignment'
+  params: {
+    appConfigStoreName: appConfigName
+    principalId: functionApp.outputs.procipleId
+  }
+}
