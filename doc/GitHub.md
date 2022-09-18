@@ -20,3 +20,4 @@ This will give you an Json that you can add as a secret to your repository under
 You should also add the subscription ID as a secret, as this will be referenced in the source code. Then you should end up with this:
 
 ![Secret picture](./Pictures/Secrets.png)
+

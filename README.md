@@ -24,3 +24,7 @@ The devices are mainly being built up on the ESP8266 and ESP32 modules. I will b
 ## Deployment
 
 See [github actions setup](./doc/GitHub.md) for more info about deployment using github actions.
+
+## Debugging
+
+See [debugging](./doc/Debugging.md) for more info about setting up local environment to debug the solution
