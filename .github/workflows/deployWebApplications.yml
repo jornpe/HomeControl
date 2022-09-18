@@ -28,6 +28,9 @@ jobs:
           app_location: "src/webapp"
           output_location: "wwwroot"
 
+      - name: Setup NuGet.exe for use with actions
+        uses: NuGet/setup-nuget@v1.0.7
+
       - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
         uses: actions/setup-dotnet@v1
         with:
@@ -36,12 +39,12 @@ jobs:
       - name: 'Build function app'
         shell: bash
         run: |
-          dotnet restore -s ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          dotnet build --source ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }} --configuration Release --output ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output
+          dotnet restore
+          dotnet build
           
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/bin/Release/net6.0'
