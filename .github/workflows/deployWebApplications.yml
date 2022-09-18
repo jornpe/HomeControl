@@ -36,6 +36,7 @@ jobs:
       - name: 'Build function app'
         shell: bash
         run: |
+          dotnet restore -s ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           dotnet build --source ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }} --configuration Release --output ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output
           
       - name: 'Run Azure Functions Action'
