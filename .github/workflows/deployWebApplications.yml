@@ -7,6 +7,11 @@ on:
       - '!src/iot**'
       - '.github/workflows/deployWebApplications.yml'
 
+env:
+  AZURE_FUNCTIONAPP_NAME: 'fnapp-homeproject'  # set this to the resource name as created in the bicep file
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: './src/webappApi'
+  DOTNET_VERSION: '6.0.x' # needs to be updated when you update the dotnet framework to use. 
+
 jobs: 
   Build-and-deploy:
     runs-on: ubuntu-latest
@@ -23,3 +28,22 @@ jobs:
           app_location: "src/webapp" # App source code path
           api_location: "src/webappApi" # Api source code path - optional
           output_location: "wwwroot" # Built app content directory - optional
+
+      - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: 'Resolve Project Dependencies Using Dotnet'
+        shell: pwsh
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          dotnet build --configuration Release --output ./output
+          popd
+          
+      - name: 'Run Azure Functions Action'
+        uses: Azure/functions-action@v1
+        id: fa
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
