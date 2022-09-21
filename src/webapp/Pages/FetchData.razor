@@ -1,7 +1,8 @@
 ﻿@page "/fetchdata"
 @using Common
-@inject HttpClient Http
+@inject WeatherService weatherService 
 @using Microsoft.AspNetCore.Authorization
+@using webapp.Services
 
 <PageTitle>Weather forecast</PageTitle>
 
@@ -45,11 +46,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        apiEndpoint = Http?.BaseAddress?.ToString();
+        apiEndpoint = WeatherService.GetBaseAddress();
 
         try
         {
-            forecasts = await Http.GetFromJsonAsync<WeatherForecastModel[]>("/api/WeatherForecast") ?? new WeatherForecastModel[] { };            
+            forecasts = await weatherService.GetWeatherForecastAsync() ?? new WeatherForecastModel[] { };
         }
         catch (Exception ex)
         {

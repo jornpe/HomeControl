@@ -21,3 +21,19 @@ You should also add the subscription ID as a secret, as this will be referenced 
 
 ![Secret picture](./Pictures/Secrets.png)
 
+## Set additional role(s) for the deployment serivice prociple
+
+Github needs permissions to assign roles to resources during deployment. To get this the service principal needs permission to do so. 
+
+Get the appId for the service principal by running this command:
+````powershell
+az ad sp list --display-name {AppRegistrationName}
+````
+
+Then run this command:
+````powershell
+az role assignment create --role Microsoft.Authorization/roleAssignments.Read.Write --scope /subscriptions/{YourSubscriptionID} --assignee {YourSpAppId}
+````
+This can also be done from the portal by opening the subscription page:
+
+ `Access Control IAM -> + Add -> Add role assignment -> Select Microsoft.Authorization/roleAssignments.Read.Write -> next -> assign to the service principal (you need to write the name of the sp to find it) -> next -> assign`
