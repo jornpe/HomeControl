@@ -1,23 +1,30 @@
 {
+    "trailingSlash": "auto",
     "routes": [
-        {
-            "route": "/fetchdata",
-            "allowedRoles": [ "authenticated" ]
-        }
-    ],
-    "auth": {
-      "identityProviders": {
-        "azureActiveDirectory": {
-          "userDetailsClaim": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
-          "registration": {
-            "openIdIssuer": "https://login.microsoftonline.com/96e79336-1e20-4d6e-b420-c665129d51d7",
-            "clientIdSettingName": "AZURE_CLIENT_ID",
-            "clientSecretSettingName": "AZURE_CLIENT_SECRET"
-          }
-        }
+      {
+        "route": "/fetchdata*",
+        "allowedRoles": ["authenticated"]
+      },
+      {
+        "route": "/counter*",
+        "allowedRoles": ["registeredusers"]
+      },
+      {
+        "route": "/api/*",
+        "methods": ["GET"],
+        "allowedRoles": ["registeredusers"]
+      },
+      {
+        "route": "/login",
+        "rewrite": "/.auth/login/aad"
+      },
+      {
+        "route": "/logout",
+        "redirect": "/.auth/logout"
       }
-    },
-    "globalHeaders": {
-      "Cache-Control": "no-cache"
+    ],
+    "navigationFallback": {
+      "rewrite": "index.html",
+      "exclude": ["/images/*.{png,jpg,gif}", "/css/*"]
     }
-}
+  }
