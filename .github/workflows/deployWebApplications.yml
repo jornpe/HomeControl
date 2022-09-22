@@ -34,23 +34,20 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: 'Build function app'
+      - name: 'Resolve Project Dependencies Using Dotnet'
         shell: bash
         run: |
-          dotnet restore
-          dotnet build --configuration Release
-      
-      - name: 'List content of runner folder'
-        shell: bash
-        run: |
-          ls -r
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          dotnet build --configuration Release --output ./output
+          popd
           
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/bin/Release/net6.0'
+          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
     
       - name: Build and deploy web app
         uses: Azure/static-web-apps-deploy@v1
