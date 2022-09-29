@@ -1,7 +1,7 @@
 {
   "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
   "configurations": {
-    "blazor": {
+    "home-project": {
       "appLocation": "src\\webapp",
       "apiLocation": "src\\webappApi",
       "outputLocation": "bin\\wwwroot",

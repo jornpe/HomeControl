@@ -3,6 +3,7 @@
 @inject WeatherService weatherService 
 @using Microsoft.AspNetCore.Authorization
 @using webapp.Services
+@attribute [Authorize(Roles = "admin")]
 
 <PageTitle>Weather forecast</PageTitle>
 
