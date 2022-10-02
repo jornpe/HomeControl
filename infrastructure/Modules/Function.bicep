@@ -51,7 +51,7 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
     serverFarmId: hostingPlan.id
     httpsOnly: true
     siteConfig: {
-      linuxFxVersion: 'DOTNET|6.0'
+      linuxFxVersion: 'DOTNET-ISOLATED|6.0'
     }
   }
   tags: tags
@@ -64,7 +64,7 @@ resource functionConfig 'Microsoft.Web/sites/config@2022-03-01' = {
   properties: {
     AzureWebJobsStorage: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};AccountKey=${storageAccount.listKeys().keys[0].value}'
     FUNCTIONS_EXTENSION_VERSION: '~4'
-    FUNCTIONS_WORKER_RUNTIME: 'dotnet'
+    FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightInstrumantionKey
     APPCONFIGSTORE_ENDPOINT: appConfigStoreEndpoint
   }

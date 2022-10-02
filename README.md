@@ -1,3 +1,6 @@
+![Infrastructure deployment](https://github.com/jornpe/HomeProject/actions/workflows/deployBicepFile.yml/badge.svg)
+![Web app and spi deployment](https://github.com/jornpe/HomeProject/actions/workflows/deployWebApplications.yml/badge.svg)
+
 # HomeProject
 
 Home Project is a system for controlling IOT devices in my home.
