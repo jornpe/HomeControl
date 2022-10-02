@@ -75,7 +75,7 @@ namespace api.tests.Functions
 
             var test = new StreamReader(stream).ReadToEnd();    
 
-            byte[] buffer = new byte[256];
+            byte[] buffer = new byte[stream.Length];
             stream.Read(buffer, 0, 256);
 
             return body;

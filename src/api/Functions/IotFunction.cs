@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text;
 using System.Text.Json;
 using api.Services;
 using Microsoft.Azure.Functions.Worker;
@@ -19,13 +20,16 @@ namespace api.Functions
         }
 
         [Function("IotFunction")]
-        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req, FunctionContext executionContext)
+        public async Task<HttpResponseData> Run(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "devices")] HttpRequestData req, 
+            FunctionContext executionContext)
         {
-            var devices = await iotService.GetTwinsAsync();
-            var json = JsonSerializer.Serialize(devices.Select(x => x.ToJson()));
+            var devices = await iotService.GetTwinsAsync().ConfigureAwait(false);
+            var json = JsonSerializer.Serialize(devices);
 
             var response = req.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(json);
+            response.Headers.Add("content-type", "application/json");
+            response.WriteString(json, Encoding.UTF8);
            
             return response;
         }
