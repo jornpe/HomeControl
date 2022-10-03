@@ -4,8 +4,6 @@ param repositoryUrl string
 param websiteName string
 @description('Instrumentation key for the ap insigts resource to send app logs to')
 param appInsightInstrumantionKey string
-@description('Endpoint to the functions API')
-param functionAppEndpoint string
 @description('Location to use for the resources')
 param location string
 @description('Tags to tag the resources with')
@@ -36,6 +34,7 @@ resource siteConfig 'Microsoft.Web/staticSites/config@2022-03-01' = {
   parent: website
   properties: {
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightInstrumantionKey
-    API_ENDPOINT: functionAppEndpoint
   }
 }
+
+output uri string = 'https://${website.properties.defaultHostname}'

@@ -23,7 +23,7 @@ resource homeRg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
-module HomeProject 'Home.bicep' = {
+module HomeProject 'resources.bicep' = {
   scope: homeRg
   name: 'HomeReourceDeployment'
   params: {

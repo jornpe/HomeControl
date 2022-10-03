@@ -46,6 +46,17 @@ module iotHub 'Modules/IotHub.bicep' = {
   ]
 }
 
+module website 'Modules/StaticWebApp.bicep' = {
+  name: 'webSite'
+  params: {
+    tags: tags
+    repositoryUrl: repositoryUrl
+    location: location
+    appInsightInstrumantionKey: appInsights.properties.InstrumentationKey
+    websiteName: websiteName
+  }
+}
+
 module functionApp 'Modules/Function.bicep' = {
   name: functionAppName
   params: {
@@ -54,20 +65,9 @@ module functionApp 'Modules/Function.bicep' = {
     hostingPlanName: appServicePlanName
     storageAccountName: storageAccountName
     appConfigStoreEndpoint: appConfig.outputs.appConfigEndpoint
+    allowedOrigins: [ website.outputs.uri ]
     location: location
     tags: tags
-  }
-}
-
-module website 'Modules/StaticWebApp.bicep' = {
-  name: 'webSite'
-  params: {
-    tags: tags
-    repositoryUrl: repositoryUrl
-    location: location
-    functionAppEndpoint: functionApp.outputs.endpoint
-    appInsightInstrumantionKey: appInsights.properties.InstrumentationKey
-    websiteName: websiteName
   }
 }
 

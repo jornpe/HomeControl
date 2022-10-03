@@ -8,6 +8,8 @@ param hostingPlanName string
 param storageAccountName string
 @description('Endpoint to the app config resource')
 param appConfigStoreEndpoint string
+@description('Origin URL that should be allowed to access this API')
+param allowedOrigins array = []
 @description('Location to use for the resources')
 param location string
 @description('Tags to tag the resources with')
@@ -26,13 +28,12 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
 resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: hostingPlanName
   location: location
-  kind: 'linux'
+  kind: 'functionapp'
   sku: {
     name: 'Y1'
     tier: 'Dynamic'
     size: 'Y1'
     family: 'Y'
-    capacity: 0
   }
   properties: {
     reserved: true
@@ -43,7 +44,7 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
   name: functionAppName
   location: location
-  kind: 'functionapp'
+  kind: 'functionapp,linux'
   identity: {
     type: 'SystemAssigned'
   }
@@ -51,7 +52,10 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
     serverFarmId: hostingPlan.id
     httpsOnly: true
     siteConfig: {
-      linuxFxVersion: 'DOTNET-ISOLATED|6.0'
+      linuxFxVersion: 'DOTNET-ISOLATED|7.0'
+      cors: {
+        allowedOrigins: union([ 'https://portal.azure.com', 'https://ms.portal.azure.com' ], allowedOrigins)
+      }
     }
   }
   tags: tags
