@@ -13,23 +13,23 @@ namespace api.tests.Functions
     [TestFixture]
     public class IotFunctionTests
     {
-        private ILogger<IotFunction> subLogger;
+        private ILoggerFactory subLoggerFactory;
         private IIotHubService subIotHubService;
 
         [SetUp]
         public void SetUp()
         {
-            subLogger = Substitute.For<ILogger<IotFunction>>();
+            subLoggerFactory = Substitute.For<ILoggerFactory>();
             subIotHubService = Substitute.For<IIotHubService>();
         }
 
         private IotFunction CreateIotFunction()
         {
-            return new IotFunction(subLogger, subIotHubService);
+            return new IotFunction(subLoggerFactory, subIotHubService);
         }
 
         [Test]
-        public async Task Run_If_There_Is_Devices_Returns_Correct_Status_Code()
+        public void Run_If_There_Is_Devices_Returns_Correct_Status_Code()
         {
             // Arrange
             var iotFunction = CreateIotFunction();
@@ -38,7 +38,7 @@ namespace api.tests.Functions
             var req = new MockHttpRequestData("");
 
             // Act
-            var result = await iotFunction.Run(req, null);
+            var result = iotFunction.Run(req);
 
             // Assert
             Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
