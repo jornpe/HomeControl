@@ -21,6 +21,9 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   sku: {
     name: 'Standard_LRS'
   }
+  properties: {
+    allowBlobPublicAccess: false
+  }
   kind: 'StorageV2'
   tags: tags
 }
@@ -36,7 +39,7 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
     family: 'Y'
   }
   properties: {
-    reserved: false
+    reserved: true
   }
   tags: tags
 }
@@ -44,7 +47,7 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
   name: functionAppName
   location: location
-  kind: 'functionapp'
+  kind: 'functionapp,linux'
   identity: {
     type: 'SystemAssigned'
   }
@@ -52,26 +55,26 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
     serverFarmId: hostingPlan.id
     httpsOnly: true
     siteConfig: {
+      linuxFxVersion: 'DOTNET-ISOLATED|6.0'
       functionAppScaleLimit: 10
       cors: {
         allowedOrigins: union([ 'https://portal.azure.com', 'https://ms.portal.azure.com' ], allowedOrigins)
       }
     }
   }
-  tags: tags
-}
 
-resource functionConfig 'Microsoft.Web/sites/config@2022-03-01' = {
-  name: 'appsettings'
-  kind: 'string'
-  parent: functionApp
-  properties: {
-    AzureWebJobsStorage: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};AccountKey=${storageAccount.listKeys().keys[0].value}'
-    FUNCTIONS_EXTENSION_VERSION: '~4'
-    FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
-    APPINSIGHTS_INSTRUMENTATIONKEY: appInsightInstrumantionKey
-    APPCONFIG_ENDPOINT: appConfigStoreEndpoint
+  resource settings 'config' = {
+    name: 'appsettings'
+    properties: {
+      AzureWebJobsStorage: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};AccountKey=${storageAccount.listKeys().keys[0].value}'
+      FUNCTIONS_EXTENSION_VERSION: '~4'
+      FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
+      APPINSIGHTS_INSTRUMENTATIONKEY: appInsightInstrumantionKey
+      APPCONFIG_ENDPOINT: appConfigStoreEndpoint
+    }
   }
+
+  tags: tags
 }
 
 output procipleId string = functionApp.identity.principalId
