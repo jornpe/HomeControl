@@ -1,7 +1,6 @@
 ﻿using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
-using System.Collections;
 
 namespace api.Services
 {

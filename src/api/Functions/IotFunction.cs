@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using api.Services;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -13,18 +14,16 @@ namespace api.Functions
         private readonly ILogger logger;
         private readonly IIotHubService iotService;
 
-        public IotFunction(ILogger<IotFunction> logger, IIotHubService iotService)
+        public IotFunction(ILoggerFactory loggerFactory, IIotHubService iotService)
         {
-            this.logger = logger;
+            logger = loggerFactory.CreateLogger<IotFunction>();
             this.iotService = iotService;
         }
 
-        [Function("IotFunction")]
-        public async Task<HttpResponseData> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "devices")] HttpRequestData req, 
-            FunctionContext executionContext)
+        [Function("Devices")]
+        public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
         {
-            var devices = await iotService.GetTwinsAsync().ConfigureAwait(false);
+            var devices = iotService.GetTwinsAsync();
             var json = JsonSerializer.Serialize(devices);
 
             var response = req.CreateResponse(HttpStatusCode.OK);

@@ -36,7 +36,7 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
     family: 'Y'
   }
   properties: {
-    reserved: true
+    reserved: false
   }
   tags: tags
 }
@@ -44,7 +44,7 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
   name: functionAppName
   location: location
-  kind: 'functionapp,linux'
+  kind: 'functionapp'
   identity: {
     type: 'SystemAssigned'
   }
@@ -52,7 +52,7 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
     serverFarmId: hostingPlan.id
     httpsOnly: true
     siteConfig: {
-      linuxFxVersion: 'DOTNET-ISOLATED|7.0'
+      functionAppScaleLimit: 10
       cors: {
         allowedOrigins: union([ 'https://portal.azure.com', 'https://ms.portal.azure.com' ], allowedOrigins)
       }
@@ -70,7 +70,7 @@ resource functionConfig 'Microsoft.Web/sites/config@2022-03-01' = {
     FUNCTIONS_EXTENSION_VERSION: '~4'
     FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightInstrumantionKey
-    APPCONFIGSTORE_ENDPOINT: appConfigStoreEndpoint
+    APPCONFIG_ENDPOINT: appConfigStoreEndpoint
   }
 }
 
