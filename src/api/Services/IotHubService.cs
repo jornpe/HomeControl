@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Devices;
+﻿using api.Contracts;
+using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
 

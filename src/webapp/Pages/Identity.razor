@@ -1,7 +1,13 @@
 ﻿@page "/identity"
 @using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
-@inject AuthenticationStateProvider AuthenticationStateProvider
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using System.Net.Http.Headers
+@using webapp.Services
+
+@inject IotService IotService
+
 
 <h3>ClaimsPrincipal Data</h3>
 
@@ -19,28 +25,30 @@
     </ul>
 }
 
-<p>@surnameMessage</p>
+<div class="col-md-6 col-lg-4 p-3">
+    <RadzenCard Style="overflow: scroll">
+        <RadzenButton style="width: 160px" IsBusy=@busy BusyText="Loading ..." Click=@GetClaimsPrincipalData Text="Get Token" />
+        <RadzenTextArea Disabled="true" @bind-Value=@token Cols="30" Rows="3" />
+    </RadzenCard>
+</div>
 
 @code {
-    private string authMessage;
-    private string surnameMessage;
+    private string authMessage = string.Empty;
+    private string token = string.Empty;
     private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
+    private bool busy = false;
 
     private async Task GetClaimsPrincipalData()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+        busy = true;
 
-        if (user.Identity.IsAuthenticated)
+        token = await IotService.GetToken();
+
+        if (string.IsNullOrEmpty(token))
         {
-            authMessage = $"{user.Identity.Name} is authenticated.";
-            claims = user.Claims;
-            surnameMessage =
-                $"Surname: {user.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value}";
+            token = "no token received in the request";
         }
-        else
-        {
-            authMessage = "The user is NOT authenticated.";
-        }
+
+        busy = false;
     }
 }

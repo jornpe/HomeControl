@@ -1,7 +1,56 @@
 ﻿@page "/"
 
+@inject IotService IotService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.Azure.Devices.Shared
+@using webapp.Services
+
 <PageTitle>Index</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Welcome to my home project</h1>
 
-Welcome to your new app.
+<RadzenButton style="width: 160px" IsBusy=@busy BusyText="Getting devices..." Click=@GetDevicesAsync Text="Get devices" />
+<p hidden=@string.IsNullOrEmpty(errorMessage)>@errorMessage</p>
+
+<RadzenDataGrid @ref="devicesGrid" Data="@devices" TItem="DeviceDto" AllowSorting="true" AllowPaging="true" PageSize="5">
+    <Columns>
+
+        <RadzenDataGridColumn Width="50px" TItem="DeviceDto" Title="#" Filterable="false" Sortable="true" TextAlign="TextAlign.Center">
+            <Template Context="data">
+                @(devices?.IndexOf(data) + 1)
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="DeviceDto" Property="Id" Title="Device Id" />
+
+        <RadzenDataGridColumn TItem="DeviceDto" Property="State" Title="Connection state" />
+
+        <RadzenDataGridColumn TItem="DeviceDto" Property="LastActivityTime" Title="Last activity" />
+
+    </Columns>
+</RadzenDataGrid>
+
+@code
+{
+    RadzenDataGrid<DeviceDto> devicesGrid = new();
+    List<DeviceDto> devices = new();
+    string errorMessage = string.Empty;
+    bool busy = false;
+
+    private async Task GetDevicesAsync()
+    {
+        busy = true;
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var result = await IotService.GetDevicesAsync();
+
+            devices = result.ToList();
+        }
+        busy = false;
+    }
+}

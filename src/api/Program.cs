@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.Devices;
+using api.Contracts;
+using api.Models;
 
 var token = new DefaultAzureCredential();
 
@@ -12,6 +14,8 @@ var host = new HostBuilder()
     .ConfigureAppConfiguration((hostContext,config) =>
     {
         config.AddUserSecrets<Program>();
+        config.AddJsonFile("appsettings.json");
+        config.AddEnvironmentVariables();
 
         var configRoot = config.Build();
 
@@ -26,9 +30,13 @@ var host = new HostBuilder()
     {
         var iotHubHostName = hostContext.Configuration.GetValue<string>("iotHubHostName");
 
-        services.AddSingleton<IIotHubService, IotHubService>();
+        services.AddScoped<IIotHubService, IotHubService>();
+        services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped(_ => ServiceClient.Create(iotHubHostName, new DefaultAzureCredential()));
         services.AddScoped(_ => RegistryManager.Create(iotHubHostName, new DefaultAzureCredential()));
+
+        services.Configure<AadConfig>(hostContext.Configuration.GetSection("AzureAd"));
+
 
         //services.AddApplicationInsightsTelemetry();
     })

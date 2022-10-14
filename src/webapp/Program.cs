@@ -1,11 +1,13 @@
 using webapp;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Azure.Functions.Authentication.WebAssembly;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Polly;
 using System.Net;
 using webapp.Pages;
 using Polly.Contrib.WaitAndRetry;
 using webapp.Services;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Components.Web;
 
 // Reusable HTTP retry policy for retrying up to 10 times on request timeout and status codes from 500 and above
 var httpPolicy = Policy<HttpResponseMessage>
@@ -15,9 +17,21 @@ var httpPolicy = Policy<HttpResponseMessage>
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddHttpClient<WeatherService>().AddPolicyHandler(httpPolicy);
+if (!Uri.TryCreate(builder.Configuration.GetValue<string>("API_ENDPOINT"), UriKind.Absolute, out var apiEndpoint))
+{
+    throw new InvalidOperationException($"App configurationURI is not valid. URI: ${apiEndpoint}");
+}
 
-builder.Services.AddStaticWebAppsAuthentication();
+builder.Services.AddHttpClient<IotService>(client => client.BaseAddress = apiEndpoint)
+    .AddHttpMessageHandler(sp => sp.GetRequiredService<AuthorizationMessageHandler>()
+    .ConfigureHandler(authorizedUrls: new[] { apiEndpoint.AbsoluteUri }));
+
+builder.Services.AddMsalAuthentication(options =>
+{
+    options.ProviderOptions.DefaultAccessTokenScopes.Add(builder.Configuration.GetValue<string>("AzureApiScope"));
+    builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
+});
 
 await builder.Build().RunAsync();

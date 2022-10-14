@@ -2,11 +2,11 @@
 using NSubstitute;
 using NUnit.Framework;
 using api.Functions;
-using api.Services;
 using Microsoft.Azure.Devices.Shared;
 using System.Net;
 using Microsoft.Azure.Functions.Worker.Http;
 using Azure.Core;
+using api.Contracts;
 
 namespace api.tests.Functions
 {
@@ -15,30 +15,32 @@ namespace api.tests.Functions
     {
         private ILoggerFactory subLoggerFactory;
         private IIotHubService subIotHubService;
+        private IIdentityService identityService;
 
         [SetUp]
         public void SetUp()
         {
             subLoggerFactory = Substitute.For<ILoggerFactory>();
             subIotHubService = Substitute.For<IIotHubService>();
+            identityService = Substitute.For<IIdentityService>();
         }
 
         private IotFunction CreateIotFunction()
         {
-            return new IotFunction(subLoggerFactory, subIotHubService);
+            return new IotFunction(subLoggerFactory, subIotHubService, identityService);
         }
 
         [Test]
         public void Run_If_There_Is_Devices_Returns_Correct_Status_Code()
         {
             // Arrange
+            var req = new MockHttpRequestData("");
             var iotFunction = CreateIotFunction();
             subIotHubService.GetTwinsAsync().ReturnsForAnyArgs(GenerateDevices());
-
-            var req = new MockHttpRequestData("");
+            identityService.ValidateAccess(req).ReturnsForAnyArgs(true);
 
             // Act
-            var result = iotFunction.Run(req);
+            var result = iotFunction.Devices(req).Result;
 
             // Assert
             Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
