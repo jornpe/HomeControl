@@ -71,6 +71,7 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
       FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
       APPINSIGHTS_INSTRUMENTATIONKEY: appInsightInstrumantionKey
       APPCONFIG_ENDPOINT: appConfigStoreEndpoint
+      TENANT_ID: tenant().tenantId
     }
   }
 

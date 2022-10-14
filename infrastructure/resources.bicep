@@ -14,14 +14,13 @@ var iotHubName = 'iot-${application}'
 var appConfigName = 'appc-${application}'
 var storageAccountName = '${toLower(application)}${uniqueString(resourceGroup().id)}'
 
-resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: appInsightName
-  location: location
-  kind: 'other'
-  properties: {
-    Application_Type: 'web'
+module appInsight 'Modules/appInsight.bicep' = {
+  name: 'AppInsight'
+  params: {
+    appInsightName: appInsightName 
+    location: location
+    tags: tags
   }
-  tags: tags
 }
 
 module appConfig 'Modules/appConfig.bicep' = {
@@ -52,7 +51,7 @@ module website 'Modules/StaticWebApp.bicep' = {
     tags: tags
     repositoryUrl: repositoryUrl
     location: location
-    appInsightInstrumantionKey: appInsights.properties.InstrumentationKey
+    appInsightInstrumantionKey: appInsight.outputs.InstrumentationKey
     websiteName: websiteName
   }
 }
@@ -60,7 +59,7 @@ module website 'Modules/StaticWebApp.bicep' = {
 module functionApp 'Modules/Function.bicep' = {
   name: functionAppName
   params: {
-    appInsightInstrumantionKey: appInsights.properties.InstrumentationKey
+    appInsightInstrumantionKey: appInsight.outputs.InstrumentationKey
     functionAppName: functionAppName
     hostingPlanName: appServicePlanName
     storageAccountName: storageAccountName
