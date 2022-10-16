@@ -12,6 +12,7 @@ var appServicePlanName = 'plan-${application}'
 var functionAppName = 'fnapp-${application}'
 var iotHubName = 'iot-${application}'
 var appConfigName = 'appc-${application}'
+var functionStorageAccountName = 'function${uniqueString(resourceGroup().id)}'
 var storageAccountName = '${toLower(application)}${uniqueString(resourceGroup().id)}'
 
 module appInsight 'Modules/appInsight.bicep' = {
@@ -62,11 +63,24 @@ module functionApp 'Modules/Function.bicep' = {
     appInsightInstrumantionKey: appInsight.outputs.InstrumentationKey
     functionAppName: functionAppName
     hostingPlanName: appServicePlanName
-    storageAccountName: storageAccountName
+    storageAccountName: functionStorageAccountName
     appConfigStoreEndpoint: appConfig.outputs.appConfigEndpoint
     allowedOrigins: [ website.outputs.uri ]
     location: location
+    iotHubName: iotHubName
     tags: tags
+  }
+  dependsOn:[
+    iotHub
+  ]
+}
+
+module storageAccount 'Modules/storage.bicep' = {
+  name: 'StorageAccount'
+  params: {
+    configStoreName: appConfigName
+    location: location
+    storageAccountName: storageAccountName
   }
 }
 
@@ -85,11 +99,19 @@ module iotHubRoleAssignment 'RoleAssignments/iotHubRoleAssignments.bicep' = {
 module appConfigRoleAssignment 'RoleAssignments/appConfigRoleAssignment.bicep' = {
   name: 'AppConfigRoleAssignment'
   params: {
-    appConfigStoreName: appConfigName
     principalId: functionApp.outputs.procipleId
+    appConfigStoreName: appConfigName
   }
   dependsOn: [
     appConfig
     functionApp
   ]
+}
+
+module storageAccountRoleAssignment 'RoleAssignments/storageRoleAssignment.bicep' = {
+  name: 'StorageAccountRoleAssignment'
+  params: {
+    principalId: functionApp.outputs.procipleId
+    storageAccountName: storageAccountName
+  }
 }

@@ -1,5 +1,7 @@
 @description('Instrumentation key for the ap insigts resource to send app logs to')
 param appInsightInstrumantionKey string
+@description('Name of the Iot hub resource to create')
+param iotHubName string
 @description('Name of the functions resource to deploy')
 param functionAppName string
 @description('Name of the app service plan for the function resource')
@@ -14,6 +16,10 @@ param allowedOrigins array = []
 param location string
 @description('Tags to tag the resources with')
 param tags object
+
+resource iotHub 'Microsoft.Devices/IotHubs@2022-04-30-preview' existing = {
+  name: iotHubName
+}
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   name: storageAccountName
@@ -56,6 +62,7 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
     httpsOnly: true
     siteConfig: {
       linuxFxVersion: 'DOTNET-ISOLATED|6.0'
+      netFrameworkVersion: 'v6.0'
       functionAppScaleLimit: 10
       cors: {
         allowedOrigins: union([ 'https://portal.azure.com', 'https://ms.portal.azure.com' ], allowedOrigins)
@@ -67,11 +74,13 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
     name: 'appsettings'
     properties: {
       AzureWebJobsStorage: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};AccountKey=${storageAccount.listKeys().keys[0].value}'
+      AzureWebJobsStorage: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
       FUNCTIONS_EXTENSION_VERSION: '~4'
       FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
       APPINSIGHTS_INSTRUMENTATIONKEY: appInsightInstrumantionKey
       APPCONFIG_ENDPOINT: appConfigStoreEndpoint
       TENANT_ID: tenant().tenantId
+      IotHubEndpointConnectionString: 'Endpoint=${reference(iotHub.id, iotHub.apiVersion).eventHubEndpoints.events.endpoint};SharedAccessKeyName=iothubowner;SharedAccessKey=${listKeys(iotHub.id, iotHub.apiVersion).value[0].primaryKey};EntityPath=${reference(iotHub.id, iotHub.apiVersion).eventHubEndpoints.events.path}'
     }
   }
 

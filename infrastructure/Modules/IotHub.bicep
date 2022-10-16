@@ -11,7 +11,7 @@ resource appconfigStore 'Microsoft.AppConfiguration/configurationStores@2022-05-
   name: configStoreName
 }
 
-resource iotHub 'Microsoft.Devices/IotHubs@2021-07-02' = {
+resource iotHub 'Microsoft.Devices/IotHubs@2022-04-30-preview' = {
   name: iotHubName
   location: location
   sku: {
@@ -24,7 +24,7 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-07-02' = {
   }
 }
 
-resource keyValueConfigPairs 'Microsoft.AppConfiguration/configurationStores/keyValues@2022-05-01' = {
+resource iotHubHostName 'Microsoft.AppConfiguration/configurationStores/keyValues@2022-05-01' = {
   name: 'iotHubHostName'
   parent: appconfigStore
   properties: {
