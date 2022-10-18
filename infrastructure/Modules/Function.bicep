@@ -79,7 +79,7 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
       APPINSIGHTS_INSTRUMENTATIONKEY: appInsightInstrumantionKey
       APPCONFIG_ENDPOINT: appConfigStoreEndpoint
       TENANT_ID: tenant().tenantId
-      IotHubEndpointConnectionString: 'Endpoint=${reference(iotHub.id, iotHub.apiVersion).eventHubEndpoints.events.endpoint};SharedAccessKeyName=iothubowner;SharedAccessKey=${listKeys(iotHub.id, iotHub.apiVersion).value[0].primaryKey};EntityPath=${reference(iotHub.id, iotHub.apiVersion).eventHubEndpoints.events.path}'
+      IotHubEndpointConnectionString: 'Endpoint=${reference(iotHub.id, iotHub.apiVersion).eventHubEndpoints.events.endpoint};SharedAccessKeyName=iothubowner;SharedAccessKey=${listKeys(iotHub.id, iotHub.apiVersion).value[0].primaryKey}'
     }
   }
 
