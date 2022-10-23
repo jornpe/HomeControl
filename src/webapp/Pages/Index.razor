@@ -1,56 +1,54 @@
 ﻿@page "/"
 
-@inject IotService IotService
+@inject IUnauthApiService ApiService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.Azure.Devices.Shared
-@using webapp.Services
+@using System.Globalization
+@using webapp.Contracts
 
 <PageTitle>Index</PageTitle>
 
-<h1>Welcome to my home project</h1>
+<AuthorizeView>
+    <NotAuthorized>
+        <h1>Welcome to my home project</h1>
+        <span class="text-nowrap">
+            For more info about this project, please visit
+            <a target="_blank" class="font-weight-bold link-dark" href="https://github.com/jornpe/HomeProject">Home project github page</a>
+        </span>
+        <p hidden="@(!string.IsNullOrEmpty(temp))">Loading home office temp...</p>
+        <p hidden="@string.IsNullOrEmpty(temp)">The temp in my home office was <strong>@temp°</strong> at <strong>@time</strong></p>
+    </NotAuthorized>
+    <Authorized>
+        <Devices></Devices>
+    </Authorized>
+</AuthorizeView>
 
-<RadzenButton style="width: 160px" IsBusy=@busy BusyText="Getting devices..." Click=@GetDevicesAsync Text="Get devices" />
-<p hidden=@string.IsNullOrEmpty(errorMessage)>@errorMessage</p>
-
-<RadzenDataGrid @ref="devicesGrid" Data="@devices" TItem="DeviceDto" AllowSorting="true" AllowPaging="true" PageSize="5">
-    <Columns>
-
-        <RadzenDataGridColumn Width="50px" TItem="DeviceDto" Title="#" Filterable="false" Sortable="true" TextAlign="TextAlign.Center">
-            <Template Context="data">
-                @(devices?.IndexOf(data) + 1)
-            </Template>
-        </RadzenDataGridColumn>
-
-        <RadzenDataGridColumn TItem="DeviceDto" Property="Id" Title="Device Id" />
-
-        <RadzenDataGridColumn TItem="DeviceDto" Property="State" Title="Connection state" />
-
-        <RadzenDataGridColumn TItem="DeviceDto" Property="LastActivityTime" Title="Last activity" />
-
-    </Columns>
-</RadzenDataGrid>
 
 @code
 {
-    RadzenDataGrid<DeviceDto> devicesGrid = new();
-    List<DeviceDto> devices = new();
-    string errorMessage = string.Empty;
-    bool busy = false;
+    string temp = string.Empty;
+    DateTime time = DateTime.Now;
 
-    private async Task GetDevicesAsync()
+    protected override async Task OnInitializedAsync()
     {
-        busy = true;
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+        var json = await ApiService.GetOfficeTemp();
 
-        if (user.Identity.IsAuthenticated)
+        try
         {
-            var result = await IotService.GetDevicesAsync();
+            var jsonTemp = json?.RootElement.GetProperty("Temp").GetString();
+            var jsonTime = json?.RootElement.GetProperty("Time").GetString();
 
-            devices = result.ToList();
+            if (!string.IsNullOrEmpty(jsonTemp) && !string.IsNullOrEmpty(jsonTime))
+            {
+                temp = jsonTemp;
+                time = DateTimeOffset.FromUnixTimeSeconds(long.Parse(jsonTime)).DateTime;
+            }
         }
-        busy = false;
+        catch (Exception ex)
+        {
+            Console.WriteLine("Exception while trying to parse office temperature json object");
+            Console.WriteLine(ex);
+        }
     }
 }

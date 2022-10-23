@@ -13,20 +13,20 @@ namespace webapp.tests.Services
     [TestFixture]
     public class IotServiceTests
     {
-        private ILogger<IotService> subLogger;
+        private ILogger<ApiService> subLogger;
         private MockHttpMessageHandler mockHttp;
 
         [SetUp]
         public void SetUp()
         {
-            subLogger = Substitute.For<ILogger<IotService>>();
+            subLogger = Substitute.For<ILogger<ApiService>>();
             mockHttp = new MockHttpMessageHandler();
         }
 
-        private IotService CreateService(HttpClient client)
+        private ApiService CreateService(HttpClient client)
         {
             client.BaseAddress = new Uri("http://localhost:7071");
-            return new IotService(client, subLogger);
+            return new ApiService(client, subLogger);
         }
 
         [Test]

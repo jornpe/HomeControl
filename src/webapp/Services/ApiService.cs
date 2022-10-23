@@ -7,12 +7,12 @@ using System.Text.Json;
 
 namespace webapp.Services
 {
-    public class IotService : IIotService
+    public class ApiService : IApiService
     {
         private readonly HttpClient client;
-        private readonly ILogger<IotService> logger;
+        private readonly ILogger<ApiService> logger;
 
-        public IotService(HttpClient httpClient, ILogger<IotService> logger)
+        public ApiService(HttpClient httpClient, ILogger<ApiService> logger)
         {
             this.logger = logger;
             client = httpClient;
@@ -50,6 +50,26 @@ namespace webapp.Services
             }
 
             return token;
+        }
+
+        public async Task<JsonDocument?> GetOfficeTemp()
+        {
+            string dto = string.Empty;
+            try
+            {
+                dto = await client.GetStringAsync("/api/unauthorized/officetemp") ?? string.Empty;
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical(ex, "Exception thrown while getting token");
+            }
+
+            if (string.IsNullOrEmpty(dto))
+            {
+                return null;
+            }
+
+            return JsonDocument.Parse(dto);
         }
     }
 }

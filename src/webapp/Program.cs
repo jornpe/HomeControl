@@ -3,11 +3,10 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Polly;
 using System.Net;
-using webapp.Pages;
 using Polly.Contrib.WaitAndRetry;
 using webapp.Services;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Components.Web;
+using webapp.Contracts;
 
 // Reusable HTTP retry policy for retrying up to 10 times on request timeout and status codes from 500 and above
 var httpPolicy = Policy<HttpResponseMessage>
@@ -24,9 +23,11 @@ if (!Uri.TryCreate(builder.Configuration.GetValue<string>("API_ENDPOINT"), UriKi
     throw new InvalidOperationException($"App configurationURI is not valid. URI: ${apiEndpoint}");
 }
 
-builder.Services.AddHttpClient<IotService>(client => client.BaseAddress = apiEndpoint)
+builder.Services.AddHttpClient<IApiService, ApiService>(client => client.BaseAddress = apiEndpoint)
     .AddHttpMessageHandler(sp => sp.GetRequiredService<AuthorizationMessageHandler>()
     .ConfigureHandler(authorizedUrls: new[] { apiEndpoint.AbsoluteUri }));
+
+builder.Services.AddHttpClient<IUnauthApiService, UnauthApiService>(client => client.BaseAddress = apiEndpoint);
 
 builder.Services.AddMsalAuthentication(options =>
 {
@@ -35,3 +36,4 @@ builder.Services.AddMsalAuthentication(options =>
 });
 
 await builder.Build().RunAsync();
+

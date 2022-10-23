@@ -11,9 +11,9 @@ namespace api.Services
         private readonly ServiceClient serviceClient;
         private readonly RegistryManager registryManager;
 
-        public IotHubService(ILogger<IotHubService> logger, ServiceClient serviceClient, RegistryManager registryManager)
+        public IotHubService(ILoggerFactory loggerFactory, ServiceClient serviceClient, RegistryManager registryManager)
         {
-            this.logger = logger;
+            logger = loggerFactory.CreateLogger<IotHubService>();
             this.serviceClient = serviceClient;
             this.registryManager = registryManager;
         }
@@ -33,6 +33,12 @@ namespace api.Services
             }
 
             return twins;
+        }
+
+        public async Task<TwinCollection?> GetReportedPropertiesForDeviceAsync(string deviceId)
+        {
+            var twin = await registryManager.GetTwinAsync(deviceId);
+            return twin?.Properties?.Reported;
         }
     }
 }

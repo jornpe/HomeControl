@@ -13,9 +13,9 @@ namespace api.tests.Functions
     [TestFixture]
     public class IotFunctionTests
     {
-        private ILoggerFactory subLoggerFactory;
-        private IIotHubService subIotHubService;
-        private IIdentityService identityService;
+        private ILoggerFactory? subLoggerFactory;
+        private IIotHubService? subIotHubService;
+        private IIdentityService? identityService;
 
         [SetUp]
         public void SetUp()
@@ -27,7 +27,7 @@ namespace api.tests.Functions
 
         private IotFunction CreateIotFunction()
         {
-            return new IotFunction(subLoggerFactory, subIotHubService, identityService);
+            return new IotFunction(subLoggerFactory!, subIotHubService!, identityService!);
         }
 
         [Test]
@@ -36,8 +36,8 @@ namespace api.tests.Functions
             // Arrange
             var req = new MockHttpRequestData("");
             var iotFunction = CreateIotFunction();
-            subIotHubService.GetTwinsAsync().ReturnsForAnyArgs(GenerateDevices());
-            identityService.ValidateAccess(req).ReturnsForAnyArgs(true);
+            subIotHubService!.GetTwinsAsync().ReturnsForAnyArgs(GenerateDevices());
+            identityService!.ValidateAccess(req).ReturnsForAnyArgs(true);
 
             // Act
             var result = iotFunction.Devices(req).Result;

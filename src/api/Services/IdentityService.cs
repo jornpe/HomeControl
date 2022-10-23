@@ -1,5 +1,6 @@
 ﻿using api.Contracts;
 using api.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -13,9 +14,11 @@ namespace api.Services
     public sealed class IdentityService : IIdentityService
     {
         private readonly AadConfig aadConfig;
+        private readonly ILogger<IdentityService> logger;
 
-        public IdentityService(IOptions<AadConfig> aadOptions)
+        public IdentityService(ILoggerFactory loggerFactory, IOptions<AadConfig> aadOptions)
         {
+            logger = loggerFactory.CreateLogger<IdentityService>();
             aadConfig = aadOptions.Value;
         }
 
@@ -55,8 +58,9 @@ namespace api.Services
                 // TODO: Validate claims to see if request has correct roles. 
                 // https://learn.microsoft.com/en-us/azure/active-directory/develop/scenario-protected-web-api-verification-scope-app-roles?tabs=aspnetcore
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logger.LogCritical(ex, "Error while validating token");
                 return false;
             }
 

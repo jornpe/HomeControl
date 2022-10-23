@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.Devices;
 using api.Contracts;
 using api.Models;
+using Azure.Data.Tables;
 
 var token = new DefaultAzureCredential();
 
@@ -29,14 +30,22 @@ var host = new HostBuilder()
     .ConfigureServices((hostContext, services) =>
     {
         var iotHubHostName = hostContext.Configuration.GetValue<string>("iotHubHostName");
+        var storageAccountName = hostContext.Configuration.GetValue<string>("StorageAccountName");
+        var storageEndpoint = $"https://{storageAccountName}.table.core.windows.net/";
+        
+        if (!Uri.TryCreate(storageEndpoint, UriKind.Absolute, out var endpoint))
+        {
+            throw new InvalidOperationException("App configuration URI is not valid.");
+        }
 
         services.AddScoped<IIotHubService, IotHubService>();
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IDbClient, DbClient>();
         services.AddScoped(_ => ServiceClient.Create(iotHubHostName, new DefaultAzureCredential()));
         services.AddScoped(_ => RegistryManager.Create(iotHubHostName, new DefaultAzureCredential()));
+        services.AddScoped(_ => new TableServiceClient(endpoint, new DefaultAzureCredential()));
 
         services.Configure<AadConfig>(hostContext.Configuration.GetSection("AzureAd"));
-
 
         //services.AddApplicationInsightsTelemetry();
     })
