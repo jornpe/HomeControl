@@ -32,15 +32,15 @@ jobs:
       - name: Install dependencies
         run: dotnet restore
 
-      - name: Test
-        run: dotnet test --logger trx --results-directory "TestResults-${{ env.DOTNET_VERSION }}"
+      # - name: Test
+      #   run: dotnet test --logger trx --results-directory "TestResults-${{ env.DOTNET_VERSION }}"
 
-      - name: Upload dotnet test results
-        uses: actions/upload-artifact@v3
-        with:
-          name: dotnet-results-${{ env.DOTNET_VERSION }}
-          path: TestResults-${{ env.DOTNET_VERSION }}
-        if: ${{ always() }}
+      # - name: Upload dotnet test results
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: dotnet-results-${{ env.DOTNET_VERSION }}
+      #     path: TestResults-${{ env.DOTNET_VERSION }}
+      #   if: ${{ always() }}
       
       - name: Build
         run: dotnet build --source ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }} --configuration Release --output ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output
