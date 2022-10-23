@@ -7,6 +7,7 @@ using System.Net;
 using Microsoft.Azure.Functions.Worker.Http;
 using Azure.Core;
 using api.Contracts;
+using Microsoft.Extensions.Configuration;
 
 namespace api.tests.Functions
 {
@@ -16,6 +17,7 @@ namespace api.tests.Functions
         private ILoggerFactory? subLoggerFactory;
         private IIotHubService? subIotHubService;
         private IIdentityService? identityService;
+        private IConfiguration? configuration;
 
         [SetUp]
         public void SetUp()
@@ -23,11 +25,12 @@ namespace api.tests.Functions
             subLoggerFactory = Substitute.For<ILoggerFactory>();
             subIotHubService = Substitute.For<IIotHubService>();
             identityService = Substitute.For<IIdentityService>();
+            configuration = Substitute.For<IConfiguration>();
         }
 
         private IotFunction CreateIotFunction()
         {
-            return new IotFunction(subLoggerFactory!, subIotHubService!, identityService!);
+            return new IotFunction(subLoggerFactory!, subIotHubService!, identityService!, configuration!);
         }
 
         [Test]
