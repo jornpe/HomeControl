@@ -78,6 +78,8 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
       FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
       APPINSIGHTS_INSTRUMENTATIONKEY: appInsightInstrumantionKey
       APPCONFIG_ENDPOINT: appConfigStoreEndpoint
+      EventHubName: reference(iotHub.id, iotHub.apiVersion).eventHubEndpoints.events.path
+      //EventHubName: iotHub.properties.hostName
       EventHubConnectionString: 'Endpoint=${reference(iotHub.id, iotHub.apiVersion).eventHubEndpoints.events.endpoint};SharedAccessKeyName=iothubowner;SharedAccessKey=${listKeys(iotHub.id, iotHub.apiVersion).value[0].primaryKey}'
     }
   }

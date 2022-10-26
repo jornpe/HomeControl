@@ -17,4 +17,12 @@ resource appconfigStore 'Microsoft.AppConfiguration/configurationStores@2022-05-
   tags: tags
 }
 
+resource iotHubHostName 'Microsoft.AppConfiguration/configurationStores/keyValues@2022-05-01' = {
+  name: 'ApiSettings:Sentinel'
+  parent: appconfigStore
+  properties: {
+    value: '007'
+  }
+}
+
 output appConfigEndpoint string = appconfigStore.properties.endpoint

@@ -22,6 +22,15 @@ resource iotHub 'Microsoft.Devices/IotHubs@2022-04-30-preview' = {
   identity: {
     type: 'SystemAssigned'
   }
+  properties: {
+    routing: {
+      fallbackRoute: {
+        endpointNames: ['events']
+        isEnabled: true
+        source: 'DeviceMessages'
+      }
+    }
+  }
 }
 
 resource iotHubHostName 'Microsoft.AppConfiguration/configurationStores/keyValues@2022-05-01' = {
