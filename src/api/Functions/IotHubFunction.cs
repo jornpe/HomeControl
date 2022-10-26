@@ -48,7 +48,7 @@ namespace api.Functions
                         switch (message.MessageType)
                         {
                             case MessageType.Sensor:
-                                var sensor = JsonSerializer.Deserialize<DeviceSensorDto>((JsonElement)item);
+                                var sensor = JsonSerializer.Deserialize<DeviceSensorDto>(((JsonElement)item).GetRawText());
                                 if (sensor is null)
                                 {
                                     logger.LogError("Could not parse incoming sensor data");
