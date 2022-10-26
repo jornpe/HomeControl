@@ -5,6 +5,7 @@
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Globalization
+@using System.Net
 @using webapp.Contracts
 
 <PageTitle>Index</PageTitle>
@@ -16,8 +17,8 @@
             For more info about this project, please visit
             <a target="_blank" class="font-weight-bold link-dark" href="https://github.com/jornpe/HomeProject">Home project github page</a>
         </span>
-        <p hidden="@(!string.IsNullOrEmpty(temp))">Loading home office temp...</p>
-        <p hidden="@string.IsNullOrEmpty(temp)">The temp in my home office was <strong>@temp°</strong> at <strong>@time</strong></p>
+        <p hidden="@(!string.IsNullOrEmpty(temperature))">@defaultText</p>
+        <p hidden="@string.IsNullOrEmpty(temperature)">The temp in my home office was <strong>@temperature°</strong> at <strong>@time</strong></p>
     </NotAuthorized>
     <Authorized>
         <Devices></Devices>
@@ -27,28 +28,44 @@
 
 @code
 {
-    string temp = string.Empty;
+    string temperature = string.Empty;
     DateTime time = DateTime.Now;
+    string defaultText = "Loading home office temp...";
 
     protected override async Task OnInitializedAsync()
     {
-        var json = await ApiService.GetOfficeTemp();
-
         try
         {
+            var json = await ApiService.GetOfficeTemp();
+
+            if (json is null)
+            {
+                defaultText = "Could not get the temp for home office at this point.";
+                return;
+            }
+
             var jsonTemp = json?.RootElement.GetProperty("Temp").GetString();
             var jsonTime = json?.RootElement.GetProperty("Time").GetString();
 
             if (!string.IsNullOrEmpty(jsonTemp) && !string.IsNullOrEmpty(jsonTime))
             {
-                temp = jsonTemp;
+                temperature = jsonTemp;
                 time = DateTimeOffset.FromUnixTimeSeconds(long.Parse(jsonTime)).DateTime;
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
+            {
+                defaultText = "Could not get the temp for home office at this point.";
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Exception while trying to parse office temperature json object");
             Console.WriteLine(ex);
+            defaultText = "Could not get the temp for home office at this point.";
+            return;
         }
     }
 }

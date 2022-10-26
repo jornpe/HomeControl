@@ -25,7 +25,12 @@ var host = new HostBuilder()
             throw new InvalidOperationException("App configuration URI is not valid.");
         }
 
-        config.AddAzureAppConfiguration(options => options.Connect(endpoint, new DefaultAzureCredential()));
+        config.AddAzureAppConfiguration(options =>
+        {
+            options.Connect(endpoint, new DefaultAzureCredential())
+            .ConfigureRefresh(refreshOptions => refreshOptions.Register("ApiSettings:Sentinel", refreshAll: true));
+        }
+        );
     })
     .ConfigureServices((hostContext, services) =>
     {

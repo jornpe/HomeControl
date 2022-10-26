@@ -1,17 +1,14 @@
 ﻿using System.Collections;
-using System.Dynamic;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Configuration;
 using Shared.Dtos;
 using Shared.Enums;
 
 var config = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.Development.json")
+    .AddUserSecrets<Program>()
     .Build();
 
 
@@ -61,8 +58,8 @@ static async Task SendTelemetryDataAsync(DeviceClient? device, string deviceName
 
     while (true)
     {
-        //var temp = rand.Next(-20, 20);
-        //var humidity = rand.Next(0, 100);
+        var temp = rand.Next(-20, 20);
+        var humidity = rand.Next(0, 100);
 
         //var reportedProperties = new TwinCollection
         //{
@@ -85,29 +82,16 @@ static async Task SendTelemetryDataAsync(DeviceClient? device, string deviceName
                 {
                     Type = SensorType.Tempsensor,
                     Time = DateTime.UtcNow.Ticks,
-                    Value = "20.0"
+                    Value = temp.ToString()
+                },
+                new DeviceSensorDto
+                {
+                    Type = SensorType.HumiditySensor,
+                    Time = DateTime.UtcNow.Ticks,
+                    Value = humidity.ToString()
                 }
             }
         };
-
-    //string json = $$""" 
-    //              {
-    //                "deviceid": "sim-device",
-    //                "messagetype": "sensorReading",
-    //                "sensors": [
-    //                  {
-    //                    "type": "temperature",
-    //                    "value": "10.2",
-    //                    "time": {{DateTime.UtcNow.Ticks}}
-    //                  },
-    //                  {
-    //                    "type": "humidity",
-    //                    "value": "56",
-    //                    "time": {{DateTime.UtcNow.Ticks}}
-    //                  }
-    //                ]
-    //              }
-    //              """;
 
         var json = JsonSerializer.Serialize(payload);
         var msg = new Message(Encoding.ASCII.GetBytes(json));

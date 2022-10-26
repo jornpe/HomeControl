@@ -1,6 +1,4 @@
-﻿using Shared.Dtos;
-using System.Net.Http.Json;
-using System.Text.Json;
+﻿using System.Text.Json;
 using webapp.Contracts;
 
 namespace webapp.Services
@@ -21,15 +19,7 @@ namespace webapp.Services
 
         public async Task<JsonDocument?> GetOfficeTemp()
         {
-            string dto = string.Empty;
-            try
-            {
-                dto = await client.GetStringAsync("/api/officetemp") ?? string.Empty;
-            }
-            catch (Exception ex)
-            {
-                logger.LogCritical(ex, "Exception thrown while getting token");
-            }
+            string dto = await client.GetStringAsync("/api/officetemp") ?? string.Empty;
 
             if (string.IsNullOrEmpty(dto))
             {

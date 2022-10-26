@@ -8,6 +8,5 @@ namespace webapp.Contracts
         public string GetBaseAddress();
         public Task<DeviceDto[]> GetDevicesAsync();
         public Task<string> GetToken();
-        public Task<JsonDocument?> GetOfficeTemp();
     }
 }
