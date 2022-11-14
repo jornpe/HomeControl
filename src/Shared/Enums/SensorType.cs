@@ -2,8 +2,8 @@
 {
     public enum SensorType
     {
-        Tempsensor,
-        HumiditySensor,
+        Temperature,
+        Humidity,
         DewPoint,
         HeatIndex
     }

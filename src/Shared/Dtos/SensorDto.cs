@@ -1,18 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Shared.Enums;
+﻿using Shared.Enums;
 
 namespace Shared.Dtos
 {
     public class SensorDto
     {
-        public DeviceDto Device { get; set; }
-        public SensorType sensorType { get; set; }
-        public string Value { get; set; }
-        public DateTime TimeStamp { get; set; }
-
+        public string DeviceId { get; set; }
+        public SensorType SensorType { get; set; }
+        public double Value { get; set; }
+        public long EpocTime { get; set; }
+        public string SensorUnit => SensorType switch
+        {
+            SensorType.Temperature => "°C",
+            SensorType.Humidity => "%",
+            SensorType.DewPoint => "°C",
+            SensorType.HeatIndex => "°C",
+            _ => throw new ArgumentOutOfRangeException(nameof(SensorType), $"Not expected value for: {SensorType}")
+        };
     }
 }

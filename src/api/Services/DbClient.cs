@@ -29,6 +29,20 @@ namespace api.Services
             logger.LogTrace("Successfully added sensor data to table {tableName}", tableName);
         }
 
+        public async IAsyncEnumerable<SensorDb> GetSensorData(long rangeStart, long rangeEnd, string deviceId, SensorType[] sensorType)
+        {                
+            var tableName = GetTableName(MessageType.Sensor, deviceId);
+            var tableClient = client.GetTableClient(tableName);
+
+            var result = tableClient.QueryAsync<SensorDb>(
+                        filter: $"PartitionKey ge '{rangeStart}' and PartitionKey le '{rangeEnd}' and (RowKey eq '{string.Join("' or RowKey eq '", sensorType.Select(s => s.ToString()))}')");
+
+            await foreach (var entity in result)
+            {
+                yield return entity;
+            }
+        }
+
         public string GetTableName(MessageType messageType, string deviceId)
         {
             var name = $"{deviceId}{messageType}";

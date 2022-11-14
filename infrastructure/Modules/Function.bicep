@@ -65,7 +65,7 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
       netFrameworkVersion: 'v6.0'
       functionAppScaleLimit: 10
       cors: {
-        allowedOrigins: union([ 'https://portal.azure.com', 'https://ms.portal.azure.com' ], allowedOrigins)
+        allowedOrigins: union([ 'https://portal.azure.com', 'https://ms.portal.azure.com' , 'http://localhost:5000'], allowedOrigins)
       }
     }
   }

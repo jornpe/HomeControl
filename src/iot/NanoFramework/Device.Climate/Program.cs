@@ -4,6 +4,7 @@ using Iot.Device.Common;
 using Iot.Device.DHTxx.Esp32;
 using nanoFramework.Azure.Devices.Client;
 using nanoFramework.Azure.Devices.Shared;
+using nanoFramework.Hardware.Esp32;
 using nanoFramework.Json;
 using nanoFramework.Networking;
 using System;
@@ -26,48 +27,49 @@ namespace Device.Climate
         const int dhtEchoPin = 26;
         const int dhtTriggerPin = 27;
         static int reportingInterval = 900; // default is every 15 min
-        static string temp;
-        static string humidity;
-        static string dewPoint;
-        static string heatIndex;
+        static double temp;
+        static double humidity;
+        static double dewPoint;
+        static double heatIndex;
         static long time;
         static bool isLastReadSuccessful;
 
         public static void Main()
         {
-            bool wifiConnected = false;
-            while (!wifiConnected)
+            // Wrap everything inside a try clause so it always are able to go to sleep even if it crashes. 
+            try
             {
-                Console.WriteLine($"Trying to connect to SSID: {ssid}");
-                CancellationTokenSource cts = new(60000); // waiting total of 1 min for wifi connection to occur. 
-
-                //The parameter requiresDateTime is optional, and when set to true, will wait for the system to receive
-                //a valid date and time from an SNTP service.This is paramount, for example, on devices connecting to
-                //Azure IoT Hub that need to validate the server certificate and maybe generate keys which depend on accurate date and time.
-                wifiConnected = WifiNetworkHelper.ConnectDhcp(ssid, password, requiresDateTime: true, token: cts.Token);
-
-                if (!wifiConnected)
+                bool wifiConnected = false;
+                while (!wifiConnected)
                 {
-                    Console.WriteLine($"Can't connect to the network, error: {WifiNetworkHelper.Status}");
-                    if (WifiNetworkHelper.HelperException is not null)
+                    Console.WriteLine($"Trying to connect to SSID: {ssid}");
+                    CancellationTokenSource cts = new(60000); // waiting total of 1 min for wifi connection to occur. 
+
+                    //The parameter requiresDateTime is optional, and when set to true, will wait for the system to receive
+                    //a valid date and time from an SNTP service.This is paramount, for example, on devices connecting to
+                    //Azure IoT Hub that need to validate the server certificate and maybe generate keys which depend on accurate date and time.
+                    wifiConnected = WifiNetworkHelper.ConnectDhcp(ssid, password, requiresDateTime: true, token: cts.Token);
+
+                    if (!wifiConnected)
                     {
-                        Console.WriteLine($"ex: {WifiNetworkHelper.HelperException}");
+                        Console.WriteLine($"Can't connect to the network, error: {WifiNetworkHelper.Status}");
+                        if (WifiNetworkHelper.HelperException is not null)
+                        {
+                            Console.WriteLine($"ex: {WifiNetworkHelper.HelperException}");
+                        }
+                        Thread.Sleep(30000); // Wait 30sec then try again. 
                     }
-                    Thread.Sleep(30000); // Wait 30sec then try again. 
                 }
-            }
 
-            Console.WriteLine("Connected to wifi!!");
+                Console.WriteLine("Connected to wifi!!");
 
-            X509Certificate azureCert = new(AzureRootCA.BaltimoreRootCA);
+                X509Certificate azureCert = new(AzureRootCA.BaltimoreRootCA);
 
-            DeviceClient device = new(iotHubAddress, devideId, sasKey, azureCert: azureCert);
-            //DeviceClient device = new(iotHubAddress, devideId, sasKey);
-            var isOpen = device.Open();
-            Console.WriteLine($"Connection is open: {isOpen}");
+                DeviceClient device = new(iotHubAddress, devideId, sasKey, azureCert: azureCert);
+                //DeviceClient device = new(iotHubAddress, devideId, sasKey);
+                var isOpen = device.Open();
+                Console.WriteLine($"Connection is open: {isOpen}");
 
-            while (true)
-            {
                 var twin = device.GetTwin(new CancellationTokenSource(5000).Token);
 
                 Temperature dhtTemp;
@@ -93,10 +95,10 @@ namespace Device.Climate
                 if (isLastReadSuccessful)
                 {
 
-                    temp = dhtTemp.DegreesCelsius.ToString("N1");
-                    humidity = dhtHumidity.Percent.ToString("N1");
-                    heatIndex = WeatherHelper.CalculateHeatIndex(dhtTemp, dhtHumidity).DegreesCelsius.ToString("N1");
-                    dewPoint = WeatherHelper.CalculateDewPoint(dhtTemp, dhtHumidity).DegreesCelsius.ToString("N1");
+                    temp = dhtTemp.DegreesCelsius;
+                    humidity = dhtHumidity.Percent;
+                    heatIndex = WeatherHelper.CalculateHeatIndex(dhtTemp, dhtHumidity).DegreesCelsius;
+                    dewPoint = WeatherHelper.CalculateDewPoint(dhtTemp, dhtHumidity).DegreesCelsius;
                     time = DateTime.UtcNow.ToUnixTimeSeconds();
 
                     Console.WriteLine($"Temperature: {temp}\u00B0C, Relative humidity: {humidity}%, HeatIndex: {heatIndex}, DewPoint: {dewPoint}");
@@ -106,45 +108,46 @@ namespace Device.Climate
                         Deviceid = devideId,
                         MessageType = MessageType.Sensor,
                         Items = new ArrayList
-                    {
-                        new DeviceSensorDto
                         {
-                            Type = SensorType.Tempsensor,
-                            Time = time,
-                            Value = temp
-                        },
-                        new DeviceSensorDto
-                        {
-                            Type = SensorType.HumiditySensor,
-                            Time = time,
-                            Value = humidity
-                        },
-                        new DeviceSensorDto
-                        {
-                            Type = SensorType.DewPoint,
-                            Time = time,
-                            Value = dewPoint
-                        },
-                        new DeviceSensorDto
-                        {
-                            Type = SensorType.HeatIndex,
-                            Time = time,
-                            Value = heatIndex
+                            new DeviceSensorDto
+                            {
+                                Type = SensorType.Temperature,
+                                Time = time,
+                                Value = temp
+                            },
+                            new DeviceSensorDto
+                            {
+                                Type = SensorType.Humidity,
+                                Time = time,
+                                Value = humidity
+                            },
+                            new DeviceSensorDto
+                            {
+                                Type = SensorType.DewPoint,
+                                Time = time,
+                                Value = dewPoint
+                            },
+                            new DeviceSensorDto
+                            {
+                                Type = SensorType.HeatIndex,
+                                Time = time,
+                                Value = heatIndex
+                            }
                         }
-                    }
                     };
 
                     var json = JsonSerializer.SerializeObject(payload);
 
                     TwinCollection reported = new()
-                {
-                    { "LastTempReading", temp },
-                    { "LastHumidityReading", humidity },
-                    { "LastDewPointReading", dewPoint },
-                    { "LastHeatIndexReading", heatIndex },
-                    { "LastSensorRadingTime", time },
-                    { "Firmware", "nanoFramework" }
-                };
+                    {
+                        { "Sensors", $"{SensorType.Temperature},{SensorType.Humidity},{SensorType.DewPoint},{SensorType.HeatIndex}" },
+                        { SensorType.Temperature.ToString(), temp },
+                        { SensorType.Humidity.ToString(), humidity },
+                        { SensorType.DewPoint.ToString(), dewPoint },
+                        { SensorType.HeatIndex.ToString(), heatIndex },
+                        { "SensorRadingTime", time },
+                        { "Firmware", "nanoFramework" }
+                    };
 
                     var update = device.UpdateReportedProperties(reported, new CancellationTokenSource(5000).Token);
 
@@ -161,7 +164,19 @@ namespace Device.Climate
                     Console.WriteLine("Error while reading temperature sensor data");
                 }
 
-                Thread.Sleep(reportingInterval * 1000);
+                GoToSleep();
+            }
+            catch (Exception)
+            {
+                GoToSleep();
+            }
+            
+
+            static void GoToSleep()
+            {
+                Console.WriteLine($"Going to sleep for {reportingInterval} seconds");
+                Sleep.EnableWakeupByTimer(TimeSpan.FromSeconds(reportingInterval));
+                Sleep.StartDeepSleep();
             }
         }
     }

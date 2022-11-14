@@ -1,7 +1,6 @@
 using System.Text.Json;
 using api.Contracts;
 using api.Models;
-using api.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Shared.Dtos;

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Azure.Functions.Worker.Http;
-using System.Net;
 
 namespace api.Contracts
 {

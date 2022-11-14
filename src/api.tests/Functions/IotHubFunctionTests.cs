@@ -1,11 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NUnit.Framework;
-using System;
-using System.Threading.Tasks;
 using api.Contracts;
 using api.Functions;
-using Google.Protobuf.WellKnownTypes;
 
 namespace api.tests.Functions
 {

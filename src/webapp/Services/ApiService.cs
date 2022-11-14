@@ -1,7 +1,7 @@
-﻿using System.Net.Http.Json;
-using webapp.Contracts;
+﻿using webapp.Contracts;
 using Shared.Dtos;
-using System.Text.Json;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace webapp.Services
 {
@@ -20,8 +20,26 @@ namespace webapp.Services
 
         public async Task<DeviceDto[]> GetDevicesAsync()
         {
-            var devices  = await client.GetFromJsonAsync<DeviceDto[]>("/api/devices");            
+            var response  = await client.GetStringAsync("/api/devices");
+            var devices = JsonConvert.DeserializeObject<DeviceDto[]>(response);
             return devices ?? Array.Empty<DeviceDto>();
+        }
+
+        public async Task<SensorDto[]> GetSensorsAsync()
+        {
+            var response = await client.GetStringAsync("/api/sensors");
+            var devices = JsonConvert.DeserializeObject<SensorDto[]>(response);
+            return devices ?? Array.Empty<SensorDto>();
+        }
+
+        public async Task<DeviceSensorDto[]> GetSensorDataAsync(SensorDataRequestDto dto)
+        {
+            var content = new StringContent(JsonConvert.SerializeObject(dto), Encoding.UTF8, "application/json");
+            var response = await client.PostAsync("/api/sensordata", content);
+            response.EnsureSuccessStatusCode();
+
+            var sensors = JsonConvert.DeserializeObject<DeviceSensorDto[]>(await response.Content.ReadAsStringAsync());
+            return sensors ?? Array.Empty<DeviceSensorDto>();
         }
 
         public async Task<string> GetToken()

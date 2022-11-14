@@ -1,8 +1,7 @@
 ﻿using Azure;
 using Azure.Data.Tables;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.Azure.Devices;
 using Shared.Dtos;
+using Shared.Enums;
 using System.Text.Json.Serialization;
 
 namespace api.Models
@@ -30,7 +29,17 @@ namespace api.Models
             {
                PartitionKey = sensor.Time.ToString(),
                RowKey = sensor.Type.ToString(),
-               SensorValue = sensor.Value
+               SensorValue = sensor.Value.ToString("N1"),
+            };
+        }
+
+        public static explicit operator DeviceSensorDto(SensorDb db)
+        {
+            return new DeviceSensorDto
+            {
+                Time = long.Parse(db.PartitionKey),
+                Value = double.Parse(db.SensorValue),
+                Type = (SensorType)Enum.Parse(typeof(SensorType), db.RowKey)
             };
         }
     }

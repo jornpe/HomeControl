@@ -44,14 +44,12 @@
                 return;
             }
 
-            var jsonTemp = json?.RootElement.GetProperty("Temp").GetString();
-            var jsonTime = json?.RootElement.GetProperty("Time").GetString();
+            var jsonTemp = json.RootElement.GetProperty("Temp").GetDouble();
+            var jsonTime = json.RootElement.GetProperty("Time").GetInt64();
 
-            if (!string.IsNullOrEmpty(jsonTemp) && !string.IsNullOrEmpty(jsonTime))
-            {
-                temperature = jsonTemp;
-                time = DateTimeOffset.FromUnixTimeSeconds(long.Parse(jsonTime)).DateTime;
-            }
+            temperature = jsonTemp.ToString("N1");
+            time = DateTimeOffset.FromUnixTimeSeconds(jsonTime).ToLocalTime().DateTime;
+            
         }
         catch (HttpRequestException ex)
         {

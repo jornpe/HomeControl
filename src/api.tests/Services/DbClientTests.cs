@@ -1,10 +1,7 @@
 ﻿using Azure.Data.Tables;
 using NSubstitute;
 using NUnit.Framework;
-using System;
-using System.Threading.Tasks;
 using api.Services;
-using api.Models;
 using Microsoft.Extensions.Logging;
 using Shared.Enums;
 

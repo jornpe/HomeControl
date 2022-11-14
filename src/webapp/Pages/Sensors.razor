@@ -1,0 +1,168 @@
+﻿@page "/sensors"
+
+@using Shared.Enums
+@using webapp.Contracts
+@using webapp.Extensions
+@inject IApiService ApiService
+
+
+<PageTitle>Sensors</PageTitle>
+
+<h1>Sensors</h1>
+
+<RadzenCard Class="w-100 mb-4" Style="display: flex; align-items: center; gap: 0.5rem">
+
+    <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                    @bind-Value=@selectedSensors Multiple="true" Placeholder="Select..." Data=@availableSensors TextProperty="GetListItem" Class="w-100" />
+
+    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Start Time</RadzenText>
+    <RadzenDatePicker @bind-Value=@startDate DateFormat="d" Change=@(date => selectedStartTime = (int)date.Value.ToUniversalTime().Subtract(new DateTime(1970, 1, 1)).TotalSeconds) Class="w-100" />
+
+    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">End Date</RadzenText>
+    <RadzenDatePicker @bind-Value=@endDate DateFormat="d" Change=@(date => selectedEndTime = (int)date.Value.ToUniversalTime().Subtract(new DateTime(1970, 1, 1)).TotalSeconds) Class="w-100" />
+        
+    <RadzenButton style="width: 160px" IsBusy=@gettingSensorData BusyText="Loading..." Click=@GetSensorDataAsync Text="Load" />
+
+</RadzenCard>
+
+<RadzenChart>
+
+    @foreach (var sensor in sensorCollection)
+    {
+        if (sensor.Count > 0)
+        {
+            <RadzenLineSeries Smooth="true" Data="@sensor" CategoryProperty="Time" Title="@sensor[0].Type.ToString()" LineType="LineType.Dashed" ValueProperty="Value">
+                <RadzenMarkers MarkerType="MarkerType.Square" />
+                <RadzenSeriesDataLabels Visible="false" />
+            </RadzenLineSeries>
+        }
+    }
+    
+    <RadzenCategoryAxis Padding="20" Formatter="@FormatAsMonth" />
+
+</RadzenChart>
+
+
+<RadzenCard Class="w-100 mb-4" Style="display: flex; align-items: center; gap: 0.5rem">
+    <RadzenButton style="width: 160px" IsBusy=@busy BusyText="Getting sensors..." Click=@GetSensorsAsync Text="Get sensors" />
+    <p hidden=@string.IsNullOrEmpty(errorMessage)>@errorMessage</p>
+</RadzenCard>
+
+<RadzenDataGrid @ref="sensorsGrid" Data="@sensors" TItem="SensorDto" AllowSorting="true" AllowPaging="true" AllowFiltering="true" PageSize="20">
+    <Columns>
+
+        <RadzenDataGridColumn Width="40" TItem="SensorDto" Title="#" Filterable="false" Sortable="true" TextAlign="TextAlign.Center">
+            <Template Context="data">
+                @(sensors?.IndexOf(data) + 1)
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="SensorDto" Property="SensorType" Title="Sensor Type" />
+
+        <RadzenDataGridColumn TItem="SensorDto" Title="Value">
+            <Template Context="data">
+                @data.Value.ToString("N1") @data.SensorUnit
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="SensorDto" Property="EpocTime" Title="Time">
+            <Template Context="data">
+                @DateTimeOffset.FromUnixTimeSeconds(data.EpocTime).ToLocalTime().DateTime.ToString("f")
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="SensorDto" Property="DeviceId" Title="Parent Device"/>
+
+    </Columns>
+</RadzenDataGrid>
+
+@code
+{
+    DateTime? startDate = DateTime.Now.AddDays(-1);
+    DateTime? endDate = DateTime.Now;
+    int selectedStartTime = default;
+    int selectedEndTime = default;
+
+    List<DeviceSensorList> availableSensors = new();
+    List<DeviceSensorList> selectedSensors = new();
+
+    List<List<DeviceSensorDto>> sensorCollection = new List<List<DeviceSensorDto>>();
+    RadzenDataGrid<SensorDto>? sensorsGrid = new();
+    List<SensorDto> sensors = new();
+    string errorMessage = string.Empty;
+    bool busy = false;
+    bool gettingSensorData = false;
+
+
+    private async Task GetSensorDataAsync()
+    {
+        if (selectedSensors is null || selectedSensors.Count == 0)
+        {
+            Console.WriteLine("Selected sensors list is etierh null or empty");
+            return;
+        }
+
+        sensorCollection.Clear();
+
+        try
+        {
+            var dtos = selectedSensors
+                        .GroupBy(s => s.DeviceId)
+                        .Select(group => new SensorDataRequestDto
+                            {
+                                DeviceId = group.Key,
+                                Sensors = group.Select(x => x.SensorType).ToArray(),
+                                RangeStart = startDate.GetEpocTime(),
+                                RangeEnd = endDate.GetEpocTime()
+                            })
+                        .ToList();
+
+            foreach (var dto in dtos)
+            {
+                var result = await ApiService.GetSensorDataAsync(dto);
+
+                sensorCollection.AddRange(
+                    result
+                        .GroupBy(x => x.Type)
+                        .Select(g => g.ToList())
+                        .ToList());
+            }            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.StackTrace);
+            throw;
+        }
+    }
+
+    private async Task GetSensorsAsync()
+    {
+        busy = true;
+        var result = await ApiService.GetSensorsAsync();
+        sensors = result.ToList();
+
+        availableSensors = result
+                            .Select(s => new DeviceSensorList { DeviceId = s.DeviceId, SensorType = s.SensorType })
+                            .ToList();
+
+        busy = false;
+    }
+
+    string FormatAsMonth(object value)
+    {
+        if (value is not null)
+        {
+            DateTime time = DateTimeOffset.FromUnixTimeSeconds(long.Parse(value.ToString()!)).ToLocalTime().DateTime;
+            return time.ToString("MMM");
+        }
+
+        return string.Empty;
+    }
+
+    class DeviceSensorList
+    {
+        public string DeviceId { get; set; }
+        public SensorType SensorType { get; set; }
+        public string GetListItem => $"{DeviceId} : {SensorType}";
+    }
+}

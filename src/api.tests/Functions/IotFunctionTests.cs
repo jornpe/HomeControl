@@ -4,8 +4,6 @@ using NUnit.Framework;
 using api.Functions;
 using Microsoft.Azure.Devices.Shared;
 using System.Net;
-using Microsoft.Azure.Functions.Worker.Http;
-using Azure.Core;
 using api.Contracts;
 using Microsoft.Extensions.Configuration;
 
@@ -18,6 +16,7 @@ namespace api.tests.Functions
         private IIotHubService? subIotHubService;
         private IIdentityService? identityService;
         private IConfiguration? configuration;
+        private IDbClient? dbClient;
 
         [SetUp]
         public void SetUp()
@@ -26,11 +25,12 @@ namespace api.tests.Functions
             subIotHubService = Substitute.For<IIotHubService>();
             identityService = Substitute.For<IIdentityService>();
             configuration = Substitute.For<IConfiguration>();
+            dbClient = Substitute.For<IDbClient>();
         }
 
         private IotFunction CreateIotFunction()
         {
-            return new IotFunction(subLoggerFactory!, subIotHubService!, identityService!, configuration!);
+            return new IotFunction(subLoggerFactory!, subIotHubService!, identityService!, configuration!, dbClient!);
         }
 
         [Test]
@@ -43,7 +43,7 @@ namespace api.tests.Functions
             identityService!.ValidateAccess(req).ReturnsForAnyArgs(true);
 
             // Act
-            var result = iotFunction.Devices(req).Result;
+            var result = iotFunction.GetSensors(req).Result;
 
             // Assert
             Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);

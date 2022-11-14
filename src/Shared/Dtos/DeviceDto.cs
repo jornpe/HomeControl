@@ -1,25 +1,22 @@
 ﻿using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
-using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
 
 namespace Shared.Dtos
 {
     public class DeviceDto
     {
-        public string Id { get; set; }
-        public DeviceConnectionState State  { get; set; }
-        public DateTime? LastActivityTime { get; set; }
-        public bool IsOfficeDevice { get; set; } = false; // This will be used to show the current temp in the home office. That call will not require authorization
+        [JsonProperty("deviceId")]
+        public string DeviceId { get; set; }
 
-        public static explicit operator DeviceDto(Twin twin)
-        {
-            return new DeviceDto
-            {
-                Id = twin.DeviceId,
-                State = twin.ConnectionState ?? DeviceConnectionState.Disconnected,
-                LastActivityTime = twin.LastActivityTime
-            };
-        }
+        [JsonProperty("connectionState")]
+        public DeviceConnectionState State  { get; set; }
+
+        [JsonProperty("lastActivityTime")]
+        public DateTime? LastActivityTime { get; set; }
+
+        [JsonProperty("properties")]
+        public TwinCollection Properties { get; set; } =  new();
 
     }
 }

@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Configuration;
 using Shared.Dtos;
 using Shared.Enums;
@@ -58,19 +59,22 @@ static async Task SendTelemetryDataAsync(DeviceClient? device, string deviceName
 
     while (true)
     {
-        var temp = rand.Next(-20, 20);
-        var humidity = rand.Next(0, 100);
-
-        //var reportedProperties = new TwinCollection
-        //{
-        //    ["CurrentTemp"] = temp,
-        //    ["CurrentHumidity"] = humidity
-        //};
-
-        //await device.UpdateReportedPropertiesAsync(reportedProperties).ConfigureAwait(false);
-
         Console.WriteLine("Press anykey to send a new message");
         Console.ReadKey();
+
+        var temp = rand.Next(-20, 20);
+        var humidity = rand.Next(0, 100);
+        var time = DateTimeOffset.Now.ToUnixTimeSeconds();
+
+        var reportedProperties = new TwinCollection
+        {
+            ["Sensors"] = $"{SensorType.Temperature},{SensorType.Humidity}",
+            [SensorType.Temperature.ToString()] = temp,
+            [SensorType.Humidity.ToString()] = humidity,
+            ["SensorRadingTime"] = time
+        };
+
+        await device.UpdateReportedPropertiesAsync(reportedProperties).ConfigureAwait(false);
 
         var payload = new DeviceMessageDto
         {
@@ -80,15 +84,15 @@ static async Task SendTelemetryDataAsync(DeviceClient? device, string deviceName
             {
                 new DeviceSensorDto
                 {
-                    Type = SensorType.Tempsensor,
-                    Time = DateTime.UtcNow.Ticks,
-                    Value = temp.ToString()
+                    Type = SensorType.Temperature,
+                    Time = time,
+                    Value = temp
                 },
                 new DeviceSensorDto
                 {
-                    Type = SensorType.HumiditySensor,
-                    Time = DateTime.UtcNow.Ticks,
-                    Value = humidity.ToString()
+                    Type = SensorType.Humidity,
+                    Time = time,
+                    Value = humidity
                 }
             }
         };

@@ -3,9 +3,7 @@ using NSubstitute;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using RichardSzalay.MockHttp;
-using Shared.Dtos;
 using System.Net;
-using System.Net.Http.Json;
 using webapp.Services;
 
 namespace webapp.tests.Services
@@ -46,7 +44,7 @@ namespace webapp.tests.Services
             Assert.That(result, Is.Not.Null);
             Assert.That(result, Is.Not.Empty);
             Assert.That(result, Has.Exactly(1).Items);
-            Assert.That(result.First().Id, Is.EqualTo("sim-device"));
+            Assert.That(result.First().DeviceId, Is.EqualTo("sim-device"));
         }
 
         [Test]
