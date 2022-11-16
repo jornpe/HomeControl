@@ -17,11 +17,11 @@ namespace Device.Climate
 {
     public class Program
     {
-        const string devideId = "<Your Device ID>";
-        const string iotHubAddress = "<iot namespace address>.azure-devices.net";
-        const string sasKey = "<SAS primary or secondary key>";
-        const string ssid = "<WIFI SSID>";
-        const string password = "<WIFI Password>";
+        const string devideId = "HomeOfficeDevice";
+        const string iotHubAddress = "iot-homeproject.azure-devices.net";
+        const string sasKey = "zaFNQ2MJA3a+/PsoKKhtWd4bHOC85jo035V8ynHcTmk=";
+        const string ssid = "Duni19";
+        const string password = "Eddie2007";
 
         const string reportingPropertyName = "ReportingIntervalSeconds";
         const int dhtEchoPin = 26;
