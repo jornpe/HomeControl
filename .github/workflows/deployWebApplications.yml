@@ -10,7 +10,7 @@ on:
 env:
   AZURE_FUNCTIONAPP_NAME: 'fnapp-homeproject'  # set this to the resource name as created in the bicep file
   AZURE_FUNCTIONAPP_PACKAGE_PATH: './src/api'
-  DOTNET_VERSION: '6.0.x' # needs to be updated when you update the dotnet framework to use. 
+  DOTNET_VERSION: '7.x' # needs to be updated when you update the dotnet framework to use. 
 
 jobs: 
   Build-and-deploy:
@@ -31,17 +31,7 @@ jobs:
 
       - name: Install dependencies
         run: dotnet restore
-
-      # - name: Test
-      #   run: dotnet test --logger trx --results-directory "TestResults-${{ env.DOTNET_VERSION }}"
-
-      # - name: Upload dotnet test results
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: dotnet-results-${{ env.DOTNET_VERSION }}
-      #     path: TestResults-${{ env.DOTNET_VERSION }}
-      #   if: ${{ always() }}
-      
+        
       - name: Build
         run: dotnet build ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }} --configuration Release --output ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output
 
