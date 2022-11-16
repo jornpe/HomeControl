@@ -61,8 +61,8 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
     serverFarmId: hostingPlan.id
     httpsOnly: true
     siteConfig: {
-      linuxFxVersion: 'DOTNET-ISOLATED|6.0'
-      netFrameworkVersion: 'v6.0'
+      linuxFxVersion: 'DOTNET-ISOLATED|7.0'
+      netFrameworkVersion: 'v7.0'
       functionAppScaleLimit: 10
       cors: {
         allowedOrigins: union([ 'https://portal.azure.com', 'https://ms.portal.azure.com' , 'http://localhost:5000'], allowedOrigins)
@@ -79,7 +79,6 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
       APPINSIGHTS_INSTRUMENTATIONKEY: appInsightInstrumantionKey
       APPCONFIG_ENDPOINT: appConfigStoreEndpoint
       EventHubName: reference(iotHub.id, iotHub.apiVersion).eventHubEndpoints.events.path
-      //EventHubName: iotHub.properties.hostName
       EventHubConnectionString: 'Endpoint=${reference(iotHub.id, iotHub.apiVersion).eventHubEndpoints.events.endpoint};SharedAccessKeyName=iothubowner;SharedAccessKey=${listKeys(iotHub.id, iotHub.apiVersion).value[0].primaryKey}'
     }
   }
