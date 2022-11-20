@@ -1,9 +1,13 @@
 ﻿@page "/sensors"
-
+@using webapp.Model;
 @using Shared.Enums
 @using webapp.Contracts
 @using webapp.Extensions
+@using webapp.Services;
+
 @inject IApiService ApiService
+@inject DialogService DialogService
+@inject StateContainer StateContainer
 
 
 <PageTitle>Sensors</PageTitle>
@@ -13,21 +17,21 @@
 <RadzenCard Class="w-100 mb-4" Style="display: flex; align-items: center; gap: 0.5rem">
 
     <RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                    @bind-Value=@selectedSensors Multiple="true" Placeholder="Select..." Data=@availableSensors TextProperty="GetListItem" Class="w-100" />
+                    @bind-Value=@selectedSensors Multiple="true" Placeholder="Select..." Data=@StateContainer.AvailableSensors TextProperty="GetListItem" Class="w-100" />
 
-    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Start Time</RadzenText>
+    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">From </RadzenText>
     <RadzenDatePicker @bind-Value=@startDate DateFormat="d" Change=@(date => selectedStartTime = (int)date.Value.ToUniversalTime().Subtract(new DateTime(1970, 1, 1)).TotalSeconds) Class="w-100" />
 
-    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">End Date</RadzenText>
+    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">To </RadzenText>
     <RadzenDatePicker @bind-Value=@endDate DateFormat="d" Change=@(date => selectedEndTime = (int)date.Value.ToUniversalTime().Subtract(new DateTime(1970, 1, 1)).TotalSeconds) Class="w-100" />
         
-    <RadzenButton style="width: 160px" IsBusy=@gettingSensorData BusyText="Loading..." Click=@GetSensorDataAsync Text="Load" />
+    <RadzenButton style="width: 330px" IsBusy="@isLoadingDeviceData" BusyText="Loading..." Click=@GetSensorDataAsync Text="Load" />
 
 </RadzenCard>
 
 <RadzenChart>
 
-    @foreach (var sensor in sensorCollection)
+    @foreach (var sensor in StateContainer.SensorCollection)
     {
         if (sensor.Count > 0)
         {
@@ -38,22 +42,21 @@
         }
     }
     
-    <RadzenCategoryAxis Padding="20" Formatter="@FormatAsMonth" />
+    <RadzenCategoryAxis Padding="20" Formatter="@FormatXAxis" />
 
 </RadzenChart>
 
 
 <RadzenCard Class="w-100 mb-4" Style="display: flex; align-items: center; gap: 0.5rem">
-    <RadzenButton style="width: 160px" IsBusy=@busy BusyText="Getting sensors..." Click=@GetSensorsAsync Text="Get sensors" />
-    <p hidden=@string.IsNullOrEmpty(errorMessage)>@errorMessage</p>
+    <RadzenButton style="width: 160px" Click=@GetSensorsAsync Text="Get sensors" />
 </RadzenCard>
 
-<RadzenDataGrid @ref="sensorsGrid" Data="@sensors" TItem="SensorDto" AllowSorting="true" AllowPaging="true" AllowFiltering="true" PageSize="20">
+<RadzenDataGrid @ref="sensorsGrid" Data="@StateContainer.Sensors" TItem="SensorDto" AllowSorting="true" AllowPaging="true" AllowFiltering="true" PageSize="20">
     <Columns>
 
         <RadzenDataGridColumn Width="40" TItem="SensorDto" Title="#" Filterable="false" Sortable="true" TextAlign="TextAlign.Center">
             <Template Context="data">
-                @(sensors?.IndexOf(data) + 1)
+                @(StateContainer.Sensors.IndexOf(data) + 1)
             </Template>
         </RadzenDataGridColumn>
 
@@ -82,27 +85,31 @@
     DateTime? endDate = DateTime.Now;
     int selectedStartTime = default;
     int selectedEndTime = default;
+    bool isLoadingDeviceData;
 
-    List<DeviceSensorList> availableSensors = new();
     List<DeviceSensorList> selectedSensors = new();
-
-    List<List<DeviceSensorDto>> sensorCollection = new List<List<DeviceSensorDto>>();
     RadzenDataGrid<SensorDto>? sensorsGrid = new();
-    List<SensorDto> sensors = new();
-    string errorMessage = string.Empty;
-    bool busy = false;
-    bool gettingSensorData = false;
 
+    protected override void OnInitialized() => StateContainer.OnChange += StateHasChanged;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (StateContainer.Sensors.Count == 0)
+        {
+            await GetSensorsAsync();
+        }
+    }
 
     private async Task GetSensorDataAsync()
     {
         if (selectedSensors is null || selectedSensors.Count == 0)
         {
-            Console.WriteLine("Selected sensors list is etierh null or empty");
+            Console.WriteLine("Selected sensors list is ether null or empty");
             return;
         }
 
-        sensorCollection.Clear();
+        isLoadingDeviceData = true;
+        StateContainer.SensorCollection.Clear();
 
         try
         {
@@ -121,48 +128,65 @@
             {
                 var result = await ApiService.GetSensorDataAsync(dto);
 
-                sensorCollection.AddRange(
+                StateContainer.SensorCollection.AddRange(
                     result
                         .GroupBy(x => x.Type)
                         .Select(g => g.ToList())
                         .ToList());
-            }            
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.StackTrace);
             throw;
         }
+        finally
+        {
+            isLoadingDeviceData = false;
+        }
     }
 
     private async Task GetSensorsAsync()
     {
-        busy = true;
-        var result = await ApiService.GetSensorsAsync();
-        sensors = result.ToList();
+        DialogService.Open("", ds =>
+        @<div>
+            <div class="row">
+                <div class="col-md-12">
+                    Loading sensors...
+                </div>
+            </div>
+        </div>, new DialogOptions() { ShowTitle = false, Style = "min-height:auto;min-width:auto;width:auto" });
 
-        availableSensors = result
+        var result = await ApiService.GetSensorsAsync();
+        StateContainer.Sensors = result.ToList();
+        StateContainer.AvailableSensors = result
                             .Select(s => new DeviceSensorList { DeviceId = s.DeviceId, SensorType = s.SensorType })
                             .ToList();
-
-        busy = false;
+        
+        DialogService.Close();
     }
 
-    string FormatAsMonth(object value)
+    string FormatXAxis(object value)
     {
         if (value is not null)
         {
             DateTime time = DateTimeOffset.FromUnixTimeSeconds(long.Parse(value.ToString()!)).ToLocalTime().DateTime;
-            return time.ToString("MMM");
+
+            return (endDate.GetEpocTime() - startDate.GetEpocTime()) switch
+            {
+                <= 86400 =>                 time.ToString("t"),    // Less or equal 1 day
+                > 86400 and <= 259200 =>    time.ToString("H"),    // 1 to 3 days
+                > 259200 and <= 604800 =>   time.ToString("ddd"),  // 3 days to 1 week
+                > 604800 and <= 2635200 =>  time.ToString("M"),    // 1 week to 1 month 
+                _ =>                        time.ToString("MMM")   // Over 1 month
+            };
         }
 
         return string.Empty;
     }
 
-    class DeviceSensorList
+    public void Dispose()
     {
-        public string DeviceId { get; set; }
-        public SensorType SensorType { get; set; }
-        public string GetListItem => $"{DeviceId} : {SensorType}";
+        StateContainer.OnChange -= StateHasChanged;
     }
 }

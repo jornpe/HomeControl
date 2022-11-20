@@ -1,21 +1,22 @@
-﻿@inject IApiService ApiService
-
-@using webapp.Contracts
+﻿@using webapp.Contracts;
+@using webapp.Model;
+@inject IApiService ApiService
+@inject DialogService DialogService
+@inject StateContainer StateContainer
 
 <PageTitle>Devices</PageTitle>
 
 <h1>Devices</h1>
 
-<RadzenButton style="width: 160px" IsBusy=@busy BusyText="Getting devices..." Click=@GetDevicesAsync Text="Get devices" />
-<p hidden=@string.IsNullOrEmpty(errorMessage)>@errorMessage</p>
+<RadzenButton style="width: 160px" Click=@GetDevicesAsync Text="Refresh devices" />
 
-<RadzenDataGrid @ref="devicesGrid" Data="@devices" TItem="DeviceDto" AllowSorting="true" AllowPaging="true" PageSize="20">
+<RadzenDataGrid @ref="devicesGrid" Data="@StateContainer.Devices" TItem="DeviceDto" AllowSorting="true" AllowPaging="true" PageSize="20">
     <Columns>
 
         <RadzenDataGridColumn Width="70" TItem="DeviceDto" Title="#" Filterable="false" Sortable="true" TextAlign="TextAlign.Center">
             <Template Context="data">
                 <RadzenImage Path="images/device-icon.png" style="width: 40px; border-radius: 8px; margin-right: 8px;" />
-                @(devices?.IndexOf(data) + 1)
+                @(StateContainer.Devices?.IndexOf(data) + 1)
             </Template>
         </RadzenDataGridColumn>
 
@@ -31,15 +32,35 @@
 @code
 {
     RadzenDataGrid<DeviceDto>? devicesGrid = new();
-    List<DeviceDto> devices = new();
-    string errorMessage = string.Empty;
-    bool busy = false;
+
+    protected override void OnInitialized() => StateContainer.OnChange += StateHasChanged;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (StateContainer.Devices.Count == 0)
+        {
+            await GetDevicesAsync();
+        }
+    }
 
     private async Task GetDevicesAsync()
     {
-        busy = true;
+        DialogService.Open("", ds =>
+        @<div>
+            <div class="row">
+                <div class="col-md-12">
+                    Loading devices...
+                </div>
+            </div>
+        </div>, new DialogOptions() { ShowTitle = false, Style = "min-height:auto;min-width:auto;width:auto" });
+
         var result = await ApiService.GetDevicesAsync();
-        devices = result.ToList();
-        busy = false;
+        StateContainer.Devices = result.ToList();
+        DialogService.Close();
+    }
+
+    public void Dispose()
+    {
+        StateContainer.OnChange -= StateHasChanged;
     }
 }

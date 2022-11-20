@@ -7,6 +7,8 @@ using Polly.Contrib.WaitAndRetry;
 using webapp.Services;
 using Microsoft.AspNetCore.Components.Web;
 using webapp.Contracts;
+using Radzen;
+using webapp.Model;
 
 // Reusable HTTP retry policy for retrying up to 10 times on request timeout and status codes from 500 and above
 var httpPolicy = Policy<HttpResponseMessage>
@@ -34,6 +36,9 @@ builder.Services.AddMsalAuthentication(options =>
     options.ProviderOptions.DefaultAccessTokenScopes.Add(builder.Configuration.GetValue<string>("AzureApiScope"));
     builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
 });
+
+builder.Services.AddScoped<DialogService>();
+builder.Services.AddSingleton<StateContainer>();
 
 await builder.Build().RunAsync();
 
