@@ -14,6 +14,18 @@ var iotHubName = 'iot-${application}'
 var appConfigName = 'appc-${application}'
 var functionStorageAccountName = 'function${uniqueString(resourceGroup().id)}'
 var storageAccountName = '${toLower(application)}${uniqueString(resourceGroup().id)}'
+var domain = 'jornp.no'
+var customDomainNames = [
+  { 
+    domain: domain
+    validationMethod: 'dns-txt-token'
+   }
+   {
+    domain: 'www.${domain}'
+    validationMethod: 'cname-delegation'
+   }
+  ]
+    
 
 module appInsight 'Modules/appInsight.bicep' = {
   name: 'AppInsight'
@@ -57,6 +69,24 @@ module website 'Modules/StaticWebApp.bicep' = {
   }
 }
 
+module dnsZone 'Modules/dns.bicep' = {
+  name: 'dns'
+  params: {
+    zoneName: domain
+    defaultHostname: website.outputs.defaultHostname
+    staticSiteName: website.outputs.staticSiteName
+  }
+}
+
+module customDomainName 'Modules/customDomain.bicep' = {
+  name: 'customDomainNames'
+  params: {
+    domainNames: customDomainNames
+    staticSiteName: website.outputs.staticSiteName
+  }
+}
+
+var allowedOrigins = [for domainName in customDomainNames: 'https://${domainName.domain}']
 module functionApp 'Modules/Function.bicep' = {
   name: functionAppName
   params: {
@@ -65,7 +95,7 @@ module functionApp 'Modules/Function.bicep' = {
     hostingPlanName: appServicePlanName
     storageAccountName: functionStorageAccountName
     appConfigStoreEndpoint: appConfig.outputs.appConfigEndpoint
-    allowedOrigins: [ website.outputs.uri ]
+    allowedOrigins: concat([ 'https://${website.outputs.defaultHostname}' ], allowedOrigins) 
     location: location
     iotHubName: iotHubName
     tags: tags

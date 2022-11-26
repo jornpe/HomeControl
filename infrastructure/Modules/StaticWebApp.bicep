@@ -13,6 +13,7 @@ var branch = 'main'
 var provider = 'GitHub'
 var tier = 'Free'
 
+
 resource website 'Microsoft.Web/staticSites@2022-03-01' = {
   name: websiteName
   location: location
@@ -26,15 +27,15 @@ resource website 'Microsoft.Web/staticSites@2022-03-01' = {
     name: tier
     tier: tier
   }
-}
 
-resource siteConfig 'Microsoft.Web/staticSites/config@2022-03-01' = {
-  name: 'appsettings'
-  kind: 'string'
-  parent: website
-  properties: {
-    APPINSIGHTS_INSTRUMENTATIONKEY: appInsightInstrumantionKey
+  resource siteConfig 'config@2022-03-01' = {
+    name: 'appsettings'
+    kind: 'string'
+    properties: {
+      APPINSIGHTS_INSTRUMENTATIONKEY: appInsightInstrumantionKey
+    }
   }
 }
 
-output uri string = 'https://${website.properties.defaultHostname}'
+output staticSiteName string = website.name
+output defaultHostname string = website.properties.defaultHostname
