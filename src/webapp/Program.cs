@@ -34,6 +34,7 @@ builder.Services.AddHttpClient<IUnauthApiService, UnauthApiService>(client => cl
 builder.Services.AddMsalAuthentication(options =>
 {
     options.ProviderOptions.DefaultAccessTokenScopes.Add(builder.Configuration.GetValue<string>("AzureApiScope"));
+    options.ProviderOptions.Cache.CacheLocation = "localStorage";
     builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
 });
 
